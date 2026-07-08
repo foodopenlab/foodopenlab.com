@@ -1,0 +1,23 @@
+{
+  "fetched_at": "2026-05-22T13:05:37.929435+09:00",
+  "error": null,
+  "is_today": false,
+  "matched_date": "2026-05-21",
+  "items": [
+    {
+      "business_name": "꽃을피자",
+      "industry": "일반음식점",
+      "disposition_date": "20260521",
+      "disposition_start": "20260521",
+      "disposition_type": "영업소폐쇄",
+      "violation": "(20251216)2025.12.16. 흥덕구 식품위생감시원 현장점검 당시, 영업시설물 전부 철거 확인",
+      "address": "충청북도 청주시 흥덕구 봉명로228번길 34(1층 봉명동)",
+      "representative": "이**",
+      "disposition_detail": "영업소폐쇄",
+      "agency": "충청북도 청주시 흥덕구",
+      "serial_no": "4720465",
+      "category": "행정처분",
+      "service_id": "I0470"
+    }
+  ]
+}

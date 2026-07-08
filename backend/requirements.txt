@@ -1,0 +1,55 @@
+# Python 3.13
+# ── PyTorch (CUDA 12.6) ───────────────────────────────────────────
+--extra-index-url https://download.pytorch.org/whl/cu126
+torch==2.12.0+cu126
+torchvision==0.27.0+cu126
+torchaudio==2.11.0+cu126
+transformers==4.57.1
+
+# ── YOLO / Computer Vision ────────────────────────────────────────
+ultralytics==8.3.40
+opencv-python==4.11.0.86
+
+# ── Web / API ─────────────────────────────────────────────────────
+fastapi==0.136.1
+uvicorn[standard]==0.47.0
+sqlalchemy[asyncio]==2.0.49
+alembic==1.18.4
+sqlmodel==0.0.38
+pgvector==0.4.2
+psycopg[binary]==3.3.4
+python-dotenv==1.2.2
+python-multipart==0.0.20
+PyJWT==2.10.1
+pandas==3.0.3
+matplotlib==3.10.3
+seaborn==0.13.2
+scikit-learn==1.8.0
+joblib==1.5.3
+apscheduler==3.11.2
+pycryptodome==3.23.0
+kiwipiepy==0.23.2
+ollama==0.6.2
+mcp>=1.0.0
+httpx>=0.27.0
+markdown==3.8
+
+# ── LangChain (Python 3.13 / torch 2.12 compatible) ──────────────
+langchain==0.3.25
+langchain-core==0.3.65
+langchain-community==0.3.25
+langchain-ollama==0.3.3
+langsmith==0.3.45
+langgraph==0.2.70
+
+# ── Graph / Vector DB (star_craft hub pipeline) ───────────────────
+neo4j==5.18.0
+qdrant-client==1.9.2
+
+# ── Dev / Testing ─────────────────────────────────────────────────
+ruff>=0.4.0
+mypy>=1.10.0
+pydantic[mypy]>=2.0
+pre-commit>=3.7.0
+pytest>=8.0
+pytest-asyncio>=0.23

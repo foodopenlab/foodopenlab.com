@@ -1,0 +1,17 @@
+{
+  "fetched_at": "2026-07-03T17:40:02.874406+09:00",
+  "error": null,
+  "is_today": false,
+  "matched_date": "2026-07-01",
+  "items": [
+    {
+      "product_name": "프리미엄 대두레시틴 골드 플러스",
+      "reason": "자가품질위탁검사 부적합(인지질 함량 미달)",
+      "business_name": "(주)아오스",
+      "registered_at": "2026-07-01 11:11:16.548409",
+      "recall_grade": "3등급",
+      "food_type": "건강기능식품",
+      "serial_no": "3000228060"
+    }
+  ]
+}

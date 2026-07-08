@@ -1,0 +1,1150 @@
+{
+  "fetched_at": "2026-07-03T17:40:02.865162+09:00",
+  "sync_wave": "afternoon",
+  "sync_slot": "17:40",
+  "items": [
+    {
+      "product_name": "프리미엄 대두레시틴 골드 플러스",
+      "reason": "자가품질위탁검사 부적합(인지질 함량 미달)",
+      "business_name": "(주)아오스",
+      "registered_at": "2026-07-01 11:11:16.548409",
+      "recall_grade": "3등급",
+      "food_type": "건강기능식품",
+      "serial_no": "3000228060"
+    },
+    {
+      "product_name": "소다홉",
+      "reason": "세균수 기준 규격 부적합",
+      "business_name": "에이홉(A HOP COMPANY)",
+      "registered_at": "2026-07-01 09:42:48.0131",
+      "recall_grade": "3등급",
+      "food_type": "가공식품",
+      "serial_no": "3000227960"
+    },
+    {
+      "product_name": "명품갈비탕 기본맛",
+      "reason": "대장균 기준 규격 부적합",
+      "business_name": "앰엔제이fnb",
+      "registered_at": "2026-06-29 17:37:20.512756",
+      "recall_grade": "3등급",
+      "food_type": "가공식품",
+      "serial_no": "3000227952"
+    },
+    {
+      "product_name": "자숙홍합살",
+      "reason": "대장균 기준 규격 부적합",
+      "business_name": "(주)윈윈농수산",
+      "registered_at": "2026-06-26 13:19:40.242395",
+      "recall_grade": "3등급",
+      "food_type": "가공식품",
+      "serial_no": "3000227851"
+    },
+    {
+      "product_name": "닭꼬치",
+      "reason": "알레르기 유발물질 미표시(미표시 내용 : 닭고기, 우유, 대두, 밀, 쇠고기 함유)",
+      "business_name": "미광식품",
+      "registered_at": "2026-06-26 13:14:15.004464",
+      "recall_grade": "1등급",
+      "food_type": "축산물",
+      "serial_no": "3000227890"
+    },
+    {
+      "product_name": "투명 냉장고 정리용기 4단 세트 반찬통 마늘 보관용기 소분 보관함",
+      "reason": "식약처에 수입신고하지 아니한 식품용 기구 및 용기포장 수입·판매",
+      "business_name": "주식회사 펀드랩스",
+      "registered_at": "2026-06-25 17:39:04.067312",
+      "recall_grade": "1등급",
+      "food_type": "기구용기포장",
+      "serial_no": "3000227875"
+    },
+    {
+      "product_name": "울금가루",
+      "reason": "금속성이물(쇳가루) 기준 규격 부적합",
+      "business_name": "(유)제일식품",
+      "registered_at": "2026-06-25 09:39:11.215715",
+      "recall_grade": "3등급",
+      "food_type": "가공식품",
+      "serial_no": "3000227820"
+    },
+    {
+      "product_name": "우슬닭발환",
+      "reason": "표시대상 알레르기 유발 원료성분(닭고기) 미표시",
+      "business_name": "건강플러스",
+      "registered_at": "2026-06-24 17:58:22.746175",
+      "recall_grade": "1등급",
+      "food_type": "가공식품",
+      "serial_no": "3000227821"
+    },
+    {
+      "product_name": "우슬닭발환",
+      "reason": "표시대상 알레르기 유발 원료성분(닭고기) 미표시",
+      "business_name": "주식회사 생생드림",
+      "registered_at": "2026-06-24 17:57:37.339367",
+      "recall_grade": "1등급",
+      "food_type": "가공식품",
+      "serial_no": "3000227817"
+    },
+    {
+      "product_name": "명품갈비탕 기본맛",
+      "reason": "대장균 기준 규격 부적합",
+      "business_name": "앰엔제이fnb",
+      "registered_at": "2026-06-24 13:48:53.12792",
+      "recall_grade": "3등급",
+      "food_type": "가공식품",
+      "serial_no": "3000227749"
+    },
+    {
+      "product_name": "남원광원추어탕",
+      "reason": "세균발육 기준 규격 부적합",
+      "business_name": "농업회사법인(주)화촌엄마손",
+      "registered_at": "2026-06-23 18:08:47.51673",
+      "recall_grade": "3등급",
+      "food_type": "가공식품",
+      "serial_no": "3000227742"
+    },
+    {
+      "product_name": "(NEW)로얄 소보로 회오리감자",
+      "reason": "표시대상 알레르기 유발 원료성분(밀, 대두) 미표시",
+      "business_name": "타임스퀘어",
+      "registered_at": "2026-06-23 18:05:52.670172",
+      "recall_grade": "1등급",
+      "food_type": "가공식품",
+      "serial_no": "3000227767"
+    },
+    {
+      "product_name": "두배진흑염소진액",
+      "reason": "세균수 기준규격 부적합",
+      "business_name": "농업회사법인 주식회사 에이치앤디",
+      "registered_at": "2026-06-23 16:06:18.371912",
+      "recall_grade": "3등급",
+      "food_type": "축산물",
+      "serial_no": "3000227695"
+    },
+    {
+      "product_name": "자연향 가득한 고춧가루 (베트남산)",
+      "reason": "금속성이물(쇳가루) 기준 규격 부적합",
+      "business_name": "오에스농산 주식회사",
+      "registered_at": "2026-06-22 16:24:36.159404",
+      "recall_grade": "3등급",
+      "food_type": "가공식품",
+      "serial_no": "3000227684"
+    },
+    {
+      "product_name": "정성 가득 담은 고춧가루(중국산)",
+      "reason": "금속성이물(쇳가루) 기준 규격 부적합",
+      "business_name": "오에스농산 주식회사",
+      "registered_at": "2026-06-19 16:37:50.489014",
+      "recall_grade": "3등급",
+      "food_type": "가공식품",
+      "serial_no": "3000227626"
+    },
+    {
+      "product_name": "에코비 밀랍랩",
+      "reason": "식약처에 수입신고하지 아니한 식품용 기구 및 용기포장 수입·판매",
+      "business_name": "주식회사 케이비지리테일(KBG Retail Inc.)",
+      "registered_at": "2026-06-18 18:01:58.188564",
+      "recall_grade": "1등급",
+      "food_type": "기구용기포장",
+      "serial_no": "3000227567"
+    },
+    {
+      "product_name": "빙슈 턴앤업 초코",
+      "reason": "제조일자 미표시",
+      "business_name": "트렌디저트 주식회사",
+      "registered_at": "2026-06-16 17:57:18.568773",
+      "recall_grade": "1등급",
+      "food_type": "가공식품",
+      "serial_no": "3000227392"
+    },
+    {
+      "product_name": "빙슈 턴앤업 바나나맛",
+      "reason": "제조일자 미표시",
+      "business_name": "트렌디저트 주식회사",
+      "registered_at": "2026-06-16 17:57:06.878197",
+      "recall_grade": "1등급",
+      "food_type": "가공식품",
+      "serial_no": "3000227389"
+    },
+    {
+      "product_name": "빙슈 턴앤업 밀크",
+      "reason": "제조일자 미표시",
+      "business_name": "트렌디저트 주식회사",
+      "registered_at": "2026-06-16 17:56:55.201001",
+      "recall_grade": "1등급",
+      "food_type": "가공식품",
+      "serial_no": "3000227387"
+    },
+    {
+      "product_name": "빙슈 턴앤업 멜론맛",
+      "reason": "제조일자 미표시",
+      "business_name": "트렌디저트 주식회사",
+      "registered_at": "2026-06-16 17:56:35.440798",
+      "recall_grade": "1등급",
+      "food_type": "가공식품",
+      "serial_no": "3000227386"
+    },
+    {
+      "product_name": "빙슈 턴앤업 망고맛",
+      "reason": "제조일자 미표시",
+      "business_name": "트렌디저트 주식회사",
+      "registered_at": "2026-06-16 17:56:10.51489",
+      "recall_grade": "1등급",
+      "food_type": "가공식품",
+      "serial_no": "3000227385"
+    },
+    {
+      "product_name": "빙슈 턴앤업 딸기",
+      "reason": "제조일자 미표시",
+      "business_name": "트렌디저트 주식회사",
+      "registered_at": "2026-06-16 17:55:56.014335",
+      "recall_grade": "1등급",
+      "food_type": "가공식품",
+      "serial_no": "3000227342"
+    },
+    {
+      "product_name": "추억의 알짜소세지",
+      "reason": "세균수 기준규격 부적합",
+      "business_name": "주식회사 디와이푸드텍 농업회사법인",
+      "registered_at": "2026-06-16 10:19:59.983578",
+      "recall_grade": "3등급",
+      "food_type": "축산물",
+      "serial_no": "3000227337"
+    },
+    {
+      "product_name": "해물누룽지탕(원재료 중 '해물누룽지소스' 부적합)",
+      "reason": "대장균군 기준 규격 부적합",
+      "business_name": "주식회사 푸드서플라이",
+      "registered_at": "2026-06-12 17:39:51.784973",
+      "recall_grade": "3등급",
+      "food_type": "가공식품",
+      "serial_no": "3000227148"
+    },
+    {
+      "product_name": "비틀10",
+      "reason": "식품첨가물(사카린나트륨) 기준 규격 부적합",
+      "business_name": "비틀",
+      "registered_at": "2026-06-10 13:17:24.077704",
+      "recall_grade": "3등급",
+      "food_type": "주류",
+      "serial_no": "3000227028"
+    },
+    {
+      "product_name": "비틀16로제",
+      "reason": "식품첨가물(사카린나트륨) 검출",
+      "business_name": "비틀",
+      "registered_at": "2026-06-09 13:41:04.655733",
+      "recall_grade": "3등급",
+      "food_type": "주류",
+      "serial_no": "3000226993"
+    },
+    {
+      "product_name": "마이디데이 브로멜라인",
+      "reason": "표시대상 알레르기 유발 원료성분(우유, 대두) 미표시",
+      "business_name": "주식회사 피비에이치",
+      "registered_at": "2026-06-05 17:48:28.096856",
+      "recall_grade": "1등급",
+      "food_type": "가공식품",
+      "serial_no": "3000226871"
+    },
+    {
+      "product_name": "밀크씨슬",
+      "reason": "자가품질검사 부적합(실리마린 함량 초과)",
+      "business_name": "대원헬스케어 주식회사 2공장",
+      "registered_at": "2026-06-01 18:11:53.839861",
+      "recall_grade": "3등급",
+      "food_type": "건강기능식품",
+      "serial_no": "3000226679"
+    },
+    {
+      "product_name": "국화",
+      "reason": "중금속(카드뮴) 기준규격 초과",
+      "business_name": "주식회사샘그린유통",
+      "registered_at": "2026-05-29 18:39:29.149968",
+      "recall_grade": "2등급",
+      "food_type": "농산물",
+      "serial_no": "3000226584"
+    },
+    {
+      "product_name": "꼴뚜기젓",
+      "reason": "무신고 소분 판매",
+      "business_name": "대일종합식품",
+      "registered_at": "2026-05-29 13:11:56.495777",
+      "recall_grade": "1등급",
+      "food_type": "가공식품",
+      "serial_no": "3000226614"
+    },
+    {
+      "product_name": "명란젓",
+      "reason": "무신고 소분판매",
+      "business_name": "대일종합식품",
+      "registered_at": "2026-05-29 13:11:24.001132",
+      "recall_grade": "1등급",
+      "food_type": "가공식품",
+      "serial_no": "3000226613"
+    },
+    {
+      "product_name": "순태젓",
+      "reason": "무신고 소분판매",
+      "business_name": "대일종합식품",
+      "registered_at": "2026-05-29 13:11:04.240665",
+      "recall_grade": "1등급",
+      "food_type": "가공식품",
+      "serial_no": "3000226612"
+    },
+    {
+      "product_name": "오징어젓",
+      "reason": "무신고 소분 판매",
+      "business_name": "대일종합식품",
+      "registered_at": "2026-05-29 13:09:54.970882",
+      "recall_grade": "1등급",
+      "food_type": "가공식품",
+      "serial_no": "3000226611"
+    },
+    {
+      "product_name": "맛창젓",
+      "reason": "무신고 소분판매",
+      "business_name": "대일종합식품",
+      "registered_at": "2026-05-29 13:09:31.035259",
+      "recall_grade": "1등급",
+      "food_type": "가공식품",
+      "serial_no": "3000226610"
+    },
+    {
+      "product_name": "낙지젓",
+      "reason": "무신고 소분판매",
+      "business_name": "대일종합식품",
+      "registered_at": "2026-05-29 13:08:51.806904",
+      "recall_grade": "1등급",
+      "food_type": "가공식품",
+      "serial_no": "3000226609"
+    },
+    {
+      "product_name": "신안새우젓",
+      "reason": "무신고 소분판매",
+      "business_name": "대일종합식품",
+      "registered_at": "2026-05-29 13:08:27.577375",
+      "recall_grade": "1등급",
+      "food_type": "가공식품",
+      "serial_no": "3000226606"
+    },
+    {
+      "product_name": "멍게젓",
+      "reason": "무신고 소분판매",
+      "business_name": "대일종합식품",
+      "registered_at": "2026-05-29 13:07:29.415898",
+      "recall_grade": "1등급",
+      "food_type": "가공식품",
+      "serial_no": "3000226602"
+    },
+    {
+      "product_name": "디노르 진공 와인 스토퍼 키퍼",
+      "reason": "식약처에 수입신고하지 아니한 식품용 기구 수입·판매",
+      "business_name": "마티에르",
+      "registered_at": "2026-05-27 17:38:14.690094",
+      "recall_grade": "1등급",
+      "food_type": "기구용기포장",
+      "serial_no": "3000226544"
+    },
+    {
+      "product_name": "강황가루",
+      "reason": "금속성이물 기준 규격 부적합",
+      "business_name": "(주)진성바이오지점",
+      "registered_at": "2026-05-19 16:22:23.364062",
+      "recall_grade": "3등급",
+      "food_type": "가공식품",
+      "serial_no": "3000226157"
+    },
+    {
+      "product_name": "이니스프리 땅콩 타르트",
+      "reason": "식품첨가물(타르색소)기준 규격 부적합",
+      "business_name": "주식회사 브레더스컴퍼니",
+      "registered_at": "2026-05-14 18:02:16.12689",
+      "recall_grade": "3등급",
+      "food_type": "가공식품",
+      "serial_no": "3000225967"
+    },
+    {
+      "product_name": "맥반석 버터구이오징어",
+      "reason": "보존료(소브산) 기준 규격 부적합",
+      "business_name": "해오름(주)",
+      "registered_at": "2026-05-14 10:25:15.38955",
+      "recall_grade": "3등급",
+      "food_type": "가공식품",
+      "serial_no": "3000225962"
+    },
+    {
+      "product_name": "잣엿",
+      "reason": "알레르기 유발물질(잣) 미표시",
+      "business_name": "서해안식품",
+      "registered_at": "2026-05-12 18:05:24.31022",
+      "recall_grade": "1등급",
+      "food_type": "가공식품",
+      "serial_no": "3000225935"
+    },
+    {
+      "product_name": "타이거모닝 이뮨샷",
+      "reason": "이물(유리조각) 혼입",
+      "business_name": "더건강한 주식회사",
+      "registered_at": "2026-05-08 18:05:59.144958",
+      "recall_grade": "1등급",
+      "food_type": "가공식품",
+      "serial_no": "3000225841"
+    },
+    {
+      "product_name": "냉동흰다리새우살(두절,탈각)",
+      "reason": "동물용의약품 기준 초과",
+      "business_name": "(주)해우씨푸드",
+      "registered_at": "2026-05-08 15:10:10.170831",
+      "recall_grade": "2등급",
+      "food_type": "가공식품",
+      "serial_no": "3000225787"
+    },
+    {
+      "product_name": "뜯어먹는 소프트번 파인애플맛",
+      "reason": "보존료(파라옥시안식향산에틸, 소브산) 검출",
+      "business_name": "효성인터내셔날",
+      "registered_at": "2026-05-07 14:10:39.033608",
+      "recall_grade": "3등급",
+      "food_type": "가공식품",
+      "serial_no": "3000225752"
+    },
+    {
+      "product_name": "프리미엄 프로바이오틱스 5000 골드",
+      "reason": "프로바이오틱스 수 부적합",
+      "business_name": "(주)더블유에이치글로벌",
+      "registered_at": "2026-05-07 14:00:44.688807",
+      "recall_grade": "3등급",
+      "food_type": "건강기능식품",
+      "serial_no": "3000225736"
+    },
+    {
+      "product_name": "냉동다진마늘",
+      "reason": "세균수 부적합",
+      "business_name": "(주)에이치비플러스",
+      "registered_at": "2026-05-07 09:03:43.172972",
+      "recall_grade": "3등급",
+      "food_type": "가공식품",
+      "serial_no": "3000225740"
+    },
+    {
+      "product_name": "냉동다진마늘",
+      "reason": "세균수 부적합",
+      "business_name": "(주)에이치비플러스",
+      "registered_at": "2026-05-07 09:03:34.873667",
+      "recall_grade": "3등급",
+      "food_type": "가공식품",
+      "serial_no": "3000225717"
+    },
+    {
+      "product_name": "비셰프 야채튀김",
+      "reason": "대장균 규격 부적합",
+      "business_name": "대하상사",
+      "registered_at": "2026-05-04 17:34:27.747163",
+      "recall_grade": "3등급",
+      "food_type": "가공식품",
+      "serial_no": "3000225660"
+    },
+    {
+      "product_name": "프리미엄 오메가3 1310 EPA&DHA",
+      "reason": "비타민D 함량 부족",
+      "business_name": "(주)더조은월드",
+      "registered_at": "2026-04-30 16:43:40.695665",
+      "recall_grade": "3등급",
+      "food_type": "건강기능식품",
+      "serial_no": "3000225578"
+    },
+    {
+      "product_name": "낫슈99",
+      "reason": "세균수 기준 규격 부적합",
+      "business_name": "(주)우포라이스텍",
+      "registered_at": "2026-04-29 13:59:20.438333",
+      "recall_grade": "3등급",
+      "food_type": "가공식품",
+      "serial_no": "3000225470"
+    },
+    {
+      "product_name": "이부자 한우 국밥",
+      "reason": "살모넬라 기준 규격 부적합",
+      "business_name": "주식회사 국왕푸드",
+      "registered_at": "2026-04-28 14:39:49.631908",
+      "recall_grade": "2등급",
+      "food_type": "가공식품",
+      "serial_no": "3000225408"
+    },
+    {
+      "product_name": "프리미엄 알티지 오메가-3 1100",
+      "reason": "EPA와 DHA의 합 함량 부족",
+      "business_name": "뉴트라칼 주식회사",
+      "registered_at": "2026-04-27 16:24:37.79608",
+      "recall_grade": "3등급",
+      "food_type": "건강기능식품",
+      "serial_no": "3000225386"
+    },
+    {
+      "product_name": "구기자",
+      "reason": "잔류농약(프로피코나졸) 기준 초과",
+      "business_name": "약용작물산지유통센터(APC)",
+      "registered_at": "2026-04-23 18:08:57.966247",
+      "recall_grade": "2등급",
+      "food_type": "농산물",
+      "serial_no": "3000225170"
+    },
+    {
+      "product_name": "마이디데이 브로멜라인",
+      "reason": "표시대상 알레르기 유발 원료성분(우유, 대두) 미표시",
+      "business_name": "주식회사 피비에이치",
+      "registered_at": "2026-04-23 17:19:22.284741",
+      "recall_grade": "1등급",
+      "food_type": "가공식품",
+      "serial_no": "3000225149"
+    },
+    {
+      "product_name": "냉동흰다리새우살",
+      "reason": "동물용의약품 기준 초과",
+      "business_name": "(주)조은수산",
+      "registered_at": "2026-04-23 16:17:39.841577",
+      "recall_grade": "2등급",
+      "food_type": "가공식품",
+      "serial_no": "3000225166"
+    },
+    {
+      "product_name": "국산 무농약 원료 마가루",
+      "reason": "대장균 기준 규격 부적합",
+      "business_name": "청오건강 농업회사법인주식회사 6공장",
+      "registered_at": "2026-04-17 18:00:19.265318",
+      "recall_grade": "3등급",
+      "food_type": "가공식품",
+      "serial_no": "3000224939"
+    },
+    {
+      "product_name": "소고기 배추 수육",
+      "reason": "세균수 기준 규격 부적합",
+      "business_name": "주식회사 자우담푸드",
+      "registered_at": "2026-04-16 17:49:34.877917",
+      "recall_grade": "3등급",
+      "food_type": "가공식품",
+      "serial_no": "3000224801"
+    },
+    {
+      "product_name": "슈퍼 멀티비타민 이뮨부스트",
+      "reason": "판토텐산 함량 부족",
+      "business_name": "주식회사 동도에프앤피",
+      "registered_at": "2026-04-16 17:17:35.913889",
+      "recall_grade": "3등급",
+      "food_type": "건강기능식품",
+      "serial_no": "3000224863"
+    },
+    {
+      "product_name": "다용도 건조망 특대형 3단",
+      "reason": "식약처에 수입신고하지 아니한 식품용 기구 수입·판매",
+      "business_name": "케이케이컴퍼니",
+      "registered_at": "2026-04-16 16:47:40.752582",
+      "recall_grade": "1등급",
+      "food_type": "기구용기포장",
+      "serial_no": "3000224881"
+    },
+    {
+      "product_name": "도가니탕",
+      "reason": "세균발육 기준 규격 부적합",
+      "business_name": "(주)초원식품",
+      "registered_at": "2026-04-15 14:20:30.671389",
+      "recall_grade": "3등급",
+      "food_type": "가공식품",
+      "serial_no": "3000224728"
+    },
+    {
+      "product_name": "청양 구기자",
+      "reason": "잔류농약 기준 초과",
+      "business_name": "토종마을",
+      "registered_at": "2026-04-15 13:24:23.553913",
+      "recall_grade": "2등급",
+      "food_type": "농산물",
+      "serial_no": "3000224680"
+    },
+    {
+      "product_name": "파워헬스다이어트C",
+      "reason": "바실루스세레우스 기준 규격 부적합",
+      "business_name": "(주)파시코",
+      "registered_at": "2026-04-14 17:46:08.652295",
+      "recall_grade": "2등급",
+      "food_type": "가공식품",
+      "serial_no": "3000224685"
+    },
+    {
+      "product_name": "저당 쑥 곤약오란다",
+      "reason": "세균수 기준 규격 부적합",
+      "business_name": "(주)서울쿠키컴퍼니",
+      "registered_at": "2026-04-14 17:45:41.772728",
+      "recall_grade": "3등급",
+      "food_type": "가공식품",
+      "serial_no": "3000224671"
+    },
+    {
+      "product_name": "파워헬스다이어트C",
+      "reason": "대장균군 기준 규격 부적합",
+      "business_name": "(주)파시코",
+      "registered_at": "2026-04-10 18:51:15.985212",
+      "recall_grade": "3등급",
+      "food_type": "가공식품",
+      "serial_no": "3000224624"
+    },
+    {
+      "product_name": "바베큐 폭립",
+      "reason": "보존료 부적합",
+      "business_name": "주식회사 엠브이푸드",
+      "registered_at": "2026-04-10 13:25:00.216224",
+      "recall_grade": "3등급",
+      "food_type": "축산물",
+      "serial_no": "3000224526"
+    },
+    {
+      "product_name": "앙플러스 가정용 특대형 건조망",
+      "reason": "식약처에 수입신고하지 아니한 식품용 기구 수입·판매",
+      "business_name": "(주)바이어스컴퍼니",
+      "registered_at": "2026-04-09 17:51:29.778952",
+      "recall_grade": "1등급",
+      "food_type": "기구용기포장",
+      "serial_no": "3000224537"
+    },
+    {
+      "product_name": "오징어채(유피)",
+      "reason": "대장균 기준 규격 부적합",
+      "business_name": "(주)전주수산",
+      "registered_at": "2026-04-07 18:03:56.058442",
+      "recall_grade": "3등급",
+      "food_type": "가공식품",
+      "serial_no": "3000224363"
+    },
+    {
+      "product_name": "진선미 배추김치",
+      "reason": "여시니아 엔테로콜리티카 기준 규격 부적합",
+      "business_name": "농업회사법인(주)대광에프앤지",
+      "registered_at": "2026-04-03 17:51:35.9232",
+      "recall_grade": "2등급",
+      "food_type": "가공식품",
+      "serial_no": "3000224315"
+    },
+    {
+      "product_name": "그릴망(캠핑화로대 구성품)",
+      "reason": "식약처에 수입신고하지 아니한 식품용 기구 수입·판매",
+      "business_name": "주식회사 위진테크노",
+      "registered_at": "2026-04-03 15:59:26.876116",
+      "recall_grade": "1등급",
+      "food_type": "기구용기포장",
+      "serial_no": "3000224286"
+    },
+    {
+      "product_name": "냉동리치",
+      "reason": "잔류농약 기준 초과",
+      "business_name": "신정푸드(주)",
+      "registered_at": "2026-04-03 14:57:33.578564",
+      "recall_grade": "2등급",
+      "food_type": "농산물",
+      "serial_no": "3000224248"
+    },
+    {
+      "product_name": "냉동리치",
+      "reason": "잔류농약 기준 초과",
+      "business_name": "신정푸드(주)",
+      "registered_at": "2026-04-03 14:57:27.339621",
+      "recall_grade": "2등급",
+      "food_type": "농산물",
+      "serial_no": "3000224242"
+    },
+    {
+      "product_name": "계피분말",
+      "reason": "금속성이물 기준 규격 부적합",
+      "business_name": "농업회사법인주식회사두손애약초",
+      "registered_at": "2026-04-02 14:45:34.424279",
+      "recall_grade": "3등급",
+      "food_type": "가공식품",
+      "serial_no": "3000224174"
+    },
+    {
+      "product_name": "강황가루",
+      "reason": "금속성이물 기준 규격 부적합",
+      "business_name": "유앤아이허브",
+      "registered_at": "2026-03-31 18:11:35.137467",
+      "recall_grade": "3등급",
+      "food_type": "가공식품",
+      "serial_no": "3000224031"
+    },
+    {
+      "product_name": "노니분말",
+      "reason": "금속성이물 기준 규격 부적합",
+      "business_name": "주식회사 디딤푸드",
+      "registered_at": "2026-03-31 18:10:27.192898",
+      "recall_grade": "3등급",
+      "food_type": "가공식품",
+      "serial_no": "3000224022"
+    },
+    {
+      "product_name": "보리새싹가루",
+      "reason": "금속성 이물 기준 규격 부적합",
+      "business_name": "헬로우 그린(hello green)",
+      "registered_at": "2026-03-31 18:09:06.239905",
+      "recall_grade": "3등급",
+      "food_type": "가공식품",
+      "serial_no": "3000224010"
+    },
+    {
+      "product_name": "강황가루",
+      "reason": "금속성이물 기준 규격 부적합",
+      "business_name": "헬로우 그린(hello green)",
+      "registered_at": "2026-03-31 18:08:20.454444",
+      "recall_grade": "3등급",
+      "food_type": "가공식품",
+      "serial_no": "3000223991"
+    },
+    {
+      "product_name": "강황분말",
+      "reason": "금속성이물 기준 규격 부적합",
+      "business_name": "바라크월드팜",
+      "registered_at": "2026-03-31 11:05:17.290141",
+      "recall_grade": "3등급",
+      "food_type": "가공식품",
+      "serial_no": "3000223980"
+    },
+    {
+      "product_name": "냉동 패션후르츠",
+      "reason": "잔류농약 기준 초과",
+      "business_name": "(주)지안",
+      "registered_at": "2026-03-27 18:12:32.713913",
+      "recall_grade": "2등급",
+      "food_type": "농산물",
+      "serial_no": "3000223758"
+    },
+    {
+      "product_name": "강황분말",
+      "reason": "금속성 이물 기준 규격 부적합",
+      "business_name": "천지가약초",
+      "registered_at": "2026-03-27 13:41:26.480857",
+      "recall_grade": "3등급",
+      "food_type": "가공식품",
+      "serial_no": "3000223742"
+    },
+    {
+      "product_name": "냉동리치",
+      "reason": "잔류농약 기준 초과",
+      "business_name": "신정푸드(주)",
+      "registered_at": "2026-03-27 10:14:34.051988",
+      "recall_grade": "2등급",
+      "food_type": "농산물",
+      "serial_no": "3000223746"
+    },
+    {
+      "product_name": "파워 오메가3 포르테 1310",
+      "reason": "비타민D 함량 부족",
+      "business_name": "제이에스헬스케어(jshealthcare)",
+      "registered_at": "2026-03-25 17:24:08.538923",
+      "recall_grade": "3등급",
+      "food_type": "건강기능식품",
+      "serial_no": "3000223704"
+    },
+    {
+      "product_name": "작심랩 단백질쉐이크 곡물맛",
+      "reason": "대장균군 기준 규격 부적합",
+      "business_name": "(주)작심랩",
+      "registered_at": "2026-03-25 13:24:14.313558",
+      "recall_grade": "3등급",
+      "food_type": "가공식품",
+      "serial_no": "3000223617"
+    },
+    {
+      "product_name": "새싹귀리분말",
+      "reason": "금속성 이물 기준 규격 부적합",
+      "business_name": "(주)웰빙",
+      "registered_at": "2026-03-24 18:14:48.224905",
+      "recall_grade": "3등급",
+      "food_type": "가공식품",
+      "serial_no": "3000223477"
+    },
+    {
+      "product_name": "루띤 발효 곡물 효소",
+      "reason": "알레르기 유발 원료성분(땅콩) 미표시",
+      "business_name": "루띤",
+      "registered_at": "2026-03-13 14:26:19.531535",
+      "recall_grade": "1등급",
+      "food_type": "가공식품",
+      "serial_no": "3000223119"
+    },
+    {
+      "product_name": "칡분말",
+      "reason": "금속성이물 기준 규격 부적합",
+      "business_name": "(주)샘그린유통",
+      "registered_at": "2026-03-12 18:07:04.892732",
+      "recall_grade": "3등급",
+      "food_type": "가공식품",
+      "serial_no": "3000223013"
+    },
+    {
+      "product_name": "강황가루",
+      "reason": "금속성이물 기준 규격 부적합",
+      "business_name": "(주)샘그린유통",
+      "registered_at": "2026-03-12 18:06:55.660037",
+      "recall_grade": "3등급",
+      "food_type": "가공식품",
+      "serial_no": "3000223010"
+    },
+    {
+      "product_name": "강황분말",
+      "reason": "금속성이물 기준 규격 부적합",
+      "business_name": "허브나래",
+      "registered_at": "2026-03-12 18:06:44.792523",
+      "recall_grade": "3등급",
+      "food_type": "가공식품",
+      "serial_no": "3000222991"
+    },
+    {
+      "product_name": "강황가루",
+      "reason": "금속성이물 기준 규격 부적합",
+      "business_name": "(주)푸드시너지",
+      "registered_at": "2026-03-12 16:46:27.972515",
+      "recall_grade": "3등급",
+      "food_type": "가공식품",
+      "serial_no": "3000223026"
+    },
+    {
+      "product_name": "핑거루트 분말",
+      "reason": "금속성이물 기준 규격 부적합",
+      "business_name": "(주)푸드시너지",
+      "registered_at": "2026-03-12 16:46:11.312165",
+      "recall_grade": "3등급",
+      "food_type": "가공식품",
+      "serial_no": "3000223020"
+    },
+    {
+      "product_name": "강황분",
+      "reason": "금속성이물 기준 규격 부적합",
+      "business_name": "(주)신영에프에스",
+      "registered_at": "2026-03-12 14:41:19.925559",
+      "recall_grade": "3등급",
+      "food_type": "가공식품",
+      "serial_no": "3000223016"
+    },
+    {
+      "product_name": "파워 오메가3 포르테 1310",
+      "reason": "비타민D 함량 부족",
+      "business_name": "제이에스헬스케어(jshealthcare)",
+      "registered_at": "2026-03-11 14:59:46.531791",
+      "recall_grade": "3등급",
+      "food_type": "건강기능식품",
+      "serial_no": "3000222922"
+    },
+    {
+      "product_name": "아쿠아셀 알티지 오메가3 더 퓨어",
+      "reason": "비타민D 함량 부족",
+      "business_name": "주식회사 비타플러스",
+      "registered_at": "2026-03-11 14:58:56.627636",
+      "recall_grade": "3등급",
+      "food_type": "건강기능식품",
+      "serial_no": "3000222919"
+    },
+    {
+      "product_name": "크리스타초코뿅",
+      "reason": "알레르기 유발물질(밀) 미표시",
+      "business_name": "에이원식품",
+      "registered_at": "2026-03-06 20:27:43.094078",
+      "recall_grade": "1등급",
+      "food_type": "가공식품",
+      "serial_no": "3000222808"
+    },
+    {
+      "product_name": "건강을담은 사과를 가득히",
+      "reason": "납 기준 규격 부적합",
+      "business_name": "태안농산물가공영농조합법인",
+      "registered_at": "2026-03-06 14:22:30.222125",
+      "recall_grade": "2등급",
+      "food_type": "가공식품",
+      "serial_no": "3000222696"
+    },
+    {
+      "product_name": "꿀대추차",
+      "reason": "세균수 기준 규격 부적합",
+      "business_name": "(주)담터",
+      "registered_at": "2026-03-05 13:40:54.422361",
+      "recall_grade": "3등급",
+      "food_type": "가공식품",
+      "serial_no": "3000222638"
+    },
+    {
+      "product_name": "훈훈수산 보일링 씨푸드",
+      "reason": "세균수 기준 규격 부적합",
+      "business_name": "(주)훈훈",
+      "registered_at": "2026-03-04 14:14:20.846394",
+      "recall_grade": "3등급",
+      "food_type": "가공식품",
+      "serial_no": "3000222567"
+    },
+    {
+      "product_name": "도토리 생강캔디",
+      "reason": "무신고 소분판매",
+      "business_name": "우주상사",
+      "registered_at": "2026-02-27 17:34:39.502509",
+      "recall_grade": "1등급",
+      "food_type": "가공식품",
+      "serial_no": "3000222423"
+    },
+    {
+      "product_name": "건강즙(마가목진액)",
+      "reason": "식품원료로 사용 불가 원료(마가목 가지)사용",
+      "business_name": "영화식품",
+      "registered_at": "2026-02-25 18:10:42.999541",
+      "recall_grade": "1등급",
+      "food_type": "즉석판매제조가공업 제조식품",
+      "serial_no": "3000222318"
+    },
+    {
+      "product_name": "건강즙(마가목진액)",
+      "reason": "식품원료로 사용 불가 원료(마가목 가지)사용",
+      "business_name": "영화식품",
+      "registered_at": "2026-02-25 18:10:35.478784",
+      "recall_grade": "1등급",
+      "food_type": "즉석판매제조가공업 제조식품",
+      "serial_no": "3000222309"
+    },
+    {
+      "product_name": "구전죽염",
+      "reason": "제조일자를 사실과 다르게 연장 표시",
+      "business_name": "(주)바이오메스턴",
+      "registered_at": "2026-02-13 17:06:19.821962",
+      "recall_grade": "3등급",
+      "food_type": "가공식품",
+      "serial_no": "3000222032"
+    },
+    {
+      "product_name": "냉동흰다리새우살(자숙)",
+      "reason": "동물용의약품 기준 초과",
+      "business_name": "(주)다이아몬드새우",
+      "registered_at": "2026-02-13 10:32:32.128595",
+      "recall_grade": "2등급",
+      "food_type": "가공식품",
+      "serial_no": "3000222060"
+    },
+    {
+      "product_name": "목이버섯",
+      "reason": "잔류농약 기준 초과",
+      "business_name": "유한회사 다온",
+      "registered_at": "2026-02-06 17:53:00.234168",
+      "recall_grade": "2등급",
+      "food_type": "농산물",
+      "serial_no": "3000221739"
+    },
+    {
+      "product_name": "요리의 정수 훈연멸치맛",
+      "reason": "표시대상 알레르기 유발 원료성분(새우) 미표시",
+      "business_name": "(주)해마",
+      "registered_at": "2026-02-04 13:31:41.156729",
+      "recall_grade": "1등급",
+      "food_type": "가공식품",
+      "serial_no": "3000221602"
+    },
+    {
+      "product_name": "재래돌김",
+      "reason": "스테비올배당체 및 효소처리스테비아 기준 부적합",
+      "business_name": "(주)당진종합식품",
+      "registered_at": "2026-01-29 19:16:40.805738",
+      "recall_grade": "3등급",
+      "food_type": "수산물",
+      "serial_no": "3000218450"
+    },
+    {
+      "product_name": "킥슬로우샷 그린",
+      "reason": "소비기한 사실과 다르게 연장 표시",
+      "business_name": "(주)올즙",
+      "registered_at": "2026-01-29 17:35:24.641995",
+      "recall_grade": "3등급",
+      "food_type": "가공식품",
+      "serial_no": "3000218499"
+    },
+    {
+      "product_name": "황칠장어진액(黃長力)",
+      "reason": "세균수 기준 규격 부적합",
+      "business_name": "자연의 힘",
+      "registered_at": "2026-01-27 17:00:04.904899",
+      "recall_grade": "3등급",
+      "food_type": "가공식품",
+      "serial_no": "3000218295"
+    },
+    {
+      "product_name": "김정호네이처 고추씨사프란차",
+      "reason": "세균수 기준 규격 부적합",
+      "business_name": "농업회사법인항산화에코팜(주)",
+      "registered_at": "2026-01-27 11:12:51.15379",
+      "recall_grade": "3등급",
+      "food_type": "가공식품",
+      "serial_no": "3000218291"
+    },
+    {
+      "product_name": "삼화맑은국간장",
+      "reason": "3-MCPD 기준 규격 부적합",
+      "business_name": "삼화식품공사",
+      "registered_at": "2026-01-21 16:58:30.203974",
+      "recall_grade": "2등급",
+      "food_type": "가공식품",
+      "serial_no": "3000218092"
+    },
+    {
+      "product_name": "파로뻥",
+      "reason": "이물(철사) 혼입",
+      "business_name": "(주)슬로우트리",
+      "registered_at": "2026-01-16 17:46:59.235504",
+      "recall_grade": "1등급",
+      "food_type": "가공식품",
+      "serial_no": "3000217875"
+    },
+    {
+      "product_name": "양념먹태채(간장맛)",
+      "reason": "소비기한을 사실과 다르게 연장 표시",
+      "business_name": "주영씨푸드",
+      "registered_at": "2026-01-16 17:46:23.643022",
+      "recall_grade": "3등급",
+      "food_type": "가공식품",
+      "serial_no": "3000217980"
+    },
+    {
+      "product_name": "고려 농축 쌍화차 골드",
+      "reason": "세균수 기준 규격 부적합",
+      "business_name": "(주)참존비엔에프",
+      "registered_at": "2026-01-09 16:33:54.54331",
+      "recall_grade": "3등급",
+      "food_type": "가공식품",
+      "serial_no": "3000217647"
+    },
+    {
+      "product_name": "장수국간장",
+      "reason": "3-MCPD 기준 규격 부적합",
+      "business_name": "장수종합식품공업사",
+      "registered_at": "2026-01-09 16:27:28.520628",
+      "recall_grade": "2등급",
+      "food_type": "가공식품",
+      "serial_no": "3000217652"
+    },
+    {
+      "product_name": "부채살마리네이드소스",
+      "reason": "보존료(파라옥시안식향산) 기준 규격 부적합",
+      "business_name": "(주)바른푸드",
+      "registered_at": "2026-01-06 17:03:41.582381",
+      "recall_grade": "3등급",
+      "food_type": "가공식품",
+      "serial_no": "3000217577"
+    },
+    {
+      "product_name": "화이트 구름빵",
+      "reason": "황색포도상구균 기준 규격 부적합",
+      "business_name": "버터풀 LAB",
+      "registered_at": "2025-12-31 18:18:36.595809",
+      "recall_grade": "2등급",
+      "food_type": "가공식품",
+      "serial_no": "3000217468"
+    },
+    {
+      "product_name": "팔도담 오미자청",
+      "reason": "세균수 기준 규격 부적합",
+      "business_name": "해오름에프앤비(F&B)",
+      "registered_at": "2025-12-29 17:11:02.99058",
+      "recall_grade": "3등급",
+      "food_type": "가공식품",
+      "serial_no": "3000217402"
+    },
+    {
+      "product_name": "냉동 리치",
+      "reason": "잔류농약 기준 초과",
+      "business_name": "주식회사 케이원무역",
+      "registered_at": "2025-12-23 15:42:41.554731",
+      "recall_grade": "2등급",
+      "food_type": "농산물",
+      "serial_no": "3000217226"
+    },
+    {
+      "product_name": "순대폭격부대찌개",
+      "reason": "대장균 기준 규격 부적합",
+      "business_name": "빨간음식연구소",
+      "registered_at": "2025-12-22 14:41:38.241657",
+      "recall_grade": "3등급",
+      "food_type": "즉석판매제조가공업 제조식품",
+      "serial_no": "3000217184"
+    },
+    {
+      "product_name": "타르트 누름돌",
+      "reason": "식약처에 수입신고하지 아니한 식품용 기구 수입·판매",
+      "business_name": "시엔아이",
+      "registered_at": "2025-12-19 10:39:37.299566",
+      "recall_grade": "1등급",
+      "food_type": "기구용기포장",
+      "serial_no": "3000217170"
+    },
+    {
+      "product_name": "100% 피넛버터 크리미",
+      "reason": "총 아플라톡신 기준 초과",
+      "business_name": "(주)이마트",
+      "registered_at": "2025-12-16 17:53:46.978121",
+      "recall_grade": "1등급",
+      "food_type": "가공식품",
+      "serial_no": "3000217063"
+    },
+    {
+      "product_name": "공주얼큰이칼국수소스",
+      "reason": "대장균군 기준 규격 부적합",
+      "business_name": "(주)미전코리아",
+      "registered_at": "2025-12-16 15:57:42.343803",
+      "recall_grade": "3등급",
+      "food_type": "가공식품",
+      "serial_no": "3000217021"
+    },
+    {
+      "product_name": "냉동 리치",
+      "reason": "잔류농약 기준 초과",
+      "business_name": "주식회사 케이원무역",
+      "registered_at": "2025-12-12 13:57:28.52606",
+      "recall_grade": "2등급",
+      "food_type": "농산물",
+      "serial_no": "3000216884"
+    },
+    {
+      "product_name": "냉동 람부탄",
+      "reason": "잔류농약 기준 초과",
+      "business_name": "주식회사 대정",
+      "registered_at": "2025-12-12 13:57:14.189467",
+      "recall_grade": "2등급",
+      "food_type": "농산물",
+      "serial_no": "3000216878"
+    },
+    {
+      "product_name": "백목이버섯",
+      "reason": "잔류농약 기준 초과",
+      "business_name": "유한회사 다온",
+      "registered_at": "2025-12-12 13:56:55.571609",
+      "recall_grade": "2등급",
+      "food_type": "농산물",
+      "serial_no": "3000216875"
+    },
+    {
+      "product_name": "정통 마블데리야끼소스",
+      "reason": "표시대상 알레르기 유발 원료성분(대두) 미표시",
+      "business_name": "(주)한품",
+      "registered_at": "2025-12-04 18:24:18.794828",
+      "recall_grade": "1등급",
+      "food_type": "가공식품",
+      "serial_no": "3000216562"
+    },
+    {
+      "product_name": "WD 매운 데리야끼소스",
+      "reason": "표시대상 알레르기 유발 원료성분(대두) 미표시",
+      "business_name": "(주)서해식품",
+      "registered_at": "2025-12-04 18:23:50.61343",
+      "recall_grade": "1등급",
+      "food_type": "가공식품",
+      "serial_no": "3000216579"
+    },
+    {
+      "product_name": "재래김",
+      "reason": "인공감미료(사카린나트륨) 검출",
+      "business_name": "(주)대복에프엔지",
+      "registered_at": "2025-12-03 16:51:54.311562",
+      "recall_grade": "3등급",
+      "food_type": "수산물",
+      "serial_no": "3000216417"
+    }
+  ]
+}

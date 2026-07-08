@@ -1,0 +1,37 @@
+# Python caches & envs
+__pycache__/
+*.py[cod]
+*$py.class
+.venv/
+venv/
+env/
+*.egg-info/
+.pytest_cache/
+.mypy_cache/
+.ruff_cache/
+.coverage
+coverage.xml
+htmlcov/
+
+# Secrets & local env
+.env
+.env.*
+!.env.example
+
+# VCS & editor
+.git/
+.gitignore
+.vscode/
+.idea/
+.cursor/
+
+# Local dev scratch & data
+scratch/
+tmp/
+temp/
+*.log
+
+# OS
+.DS_Store
+Thumbs.db
+desktop.ini

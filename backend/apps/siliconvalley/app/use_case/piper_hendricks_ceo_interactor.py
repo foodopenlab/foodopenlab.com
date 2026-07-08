@@ -1,0 +1,14 @@
+from __future__ import annotations
+
+from siliconvalley.app.dtos.piper_hendricks_ceo_dto import HendricksCeoQuery, HendricksCeoResponse
+from siliconvalley.app.ports.input.piper_hendricks_ceo_use_case import HendricksCeoUseCase
+from siliconvalley.app.ports.output.piper_hendricks_ceo_port import HendricksCeoPort
+
+
+class HendricksCeoInteractor(HendricksCeoUseCase):
+
+    def __init__(self, repository: HendricksCeoPort) -> None:
+        self._repository = repository
+
+    async def introduce_myself(self, query: HendricksCeoQuery) -> HendricksCeoResponse:
+        return await self._repository.introduce_myself(query)

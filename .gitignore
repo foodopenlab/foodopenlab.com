@@ -1,0 +1,103 @@
+# ─────────────────────────────────────────────────────────────
+# Environment & secrets
+# ─────────────────────────────────────────────────────────────
+.env
+.env.*
+!.env.example
+!.env.sample
+*.local
+*.secret
+*.secrets
+secrets/
+*.pem
+*.key
+*.crt
+*.p12
+*.pfx
+*credentials*.json
+*service-account*.json
+
+# ─────────────────────────────────────────────────────────────
+# Python
+# ─────────────────────────────────────────────────────────────
+__pycache__/
+*.py[cod]
+*$py.class
+.Python
+.venv/
+venv/
+env/
+ENV/
+pytorch_env/
+*.egg-info/
+.pytest_cache/
+.mypy_cache/
+.ruff_cache/
+.coverage
+coverage.xml
+htmlcov/
+
+# ─────────────────────────────────────────────────────────────
+# Node / Next.js
+# ─────────────────────────────────────────────────────────────
+node_modules/
+.next/
+out/
+dist/
+build/
+.turbo/
+.vercel/
+tsconfig.tsbuildinfo
+npm-debug.log*
+pnpm-debug.log*
+yarn-error.log*
+
+# ─────────────────────────────────────────────────────────────
+# Flutter / Dart (plan_flutter)
+# ─────────────────────────────────────────────────────────────
+.dart_tool/
+.flutter-plugins
+.flutter-plugins-dependencies
+.pub-cache/
+.pub/
+**/build/
+*.g.dart
+
+# ─────────────────────────────────────────────────────────────
+# ML model weights & generated artifacts
+# ─────────────────────────────────────────────────────────────
+*.pt
+*.pth
+*.onnx
+*.joblib
+*.pkl
+*.pickle
+
+# ─────────────────────────────────────────────────────────────
+# Logs, DB, runtime
+# ─────────────────────────────────────────────────────────────
+logs/
+*.log
+*.pid
+*.sqlite
+*.sqlite3
+*.db
+*.db-journal
+uploads/
+tmp/
+temp/
+.cache/
+
+# ─────────────────────────────────────────────────────────────
+# Editor / IDE / OS
+# ─────────────────────────────────────────────────────────────
+.vscode/
+.idea/
+.cursor/
+*.code-workspace
+.obsidian/workspace.json
+.obsidian/workspace*.json
+.obsidian/cache
+.DS_Store
+Thumbs.db
+desktop.ini

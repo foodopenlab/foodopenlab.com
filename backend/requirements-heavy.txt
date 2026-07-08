@@ -1,0 +1,26 @@
+# Docker 레이어 캐시 워밍용 — requirements.txt의 부분집합.
+# 이 파일이 안 바뀌면 Dockerfile의 무거운 설치 레이어가 재사용되어
+# torch/langchain/neo4j 등을 매번 재다운로드하지 않습니다.
+# requirements.txt와 버전이 갈라지지 않도록, 값을 바꿀 땐 항상 두 파일을 함께 수정하세요.
+
+--extra-index-url https://download.pytorch.org/whl/cu126
+torch==2.12.0+cu126
+torchvision==0.27.0+cu126
+torchaudio==2.11.0+cu126
+transformers==4.57.1
+
+pandas==3.0.3
+matplotlib==3.10.3
+seaborn==0.13.2
+scikit-learn==1.8.0
+joblib==1.5.3
+
+langchain==0.3.25
+langchain-core==0.3.65
+langchain-community==0.3.25
+langchain-ollama==0.3.3
+langsmith==0.3.45
+langgraph==0.2.70
+
+neo4j==5.18.0
+qdrant-client==1.9.2

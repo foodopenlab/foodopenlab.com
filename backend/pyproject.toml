@@ -1,0 +1,104 @@
+# pyproject.toml — com.auditor 하네스 엔지니어링 설정
+# 목적: Karpathy 하네스 원칙 적용 — 린터·타입체커가 코드 무결성을 강제한다.
+#       ruff(린트+포맷) + mypy(타입) 조합으로 FastAPI/SQLAlchemy 스택 전체 커버.
+
+# ── 프로젝트 메타 ──────────────────────────────────────────────────────────────
+[project]
+name = "com-auditor"
+version = "0.1.0"
+requires-python = ">=3.12"
+
+# ── Ruff — 린터 + 포매터 (flake8 + isort + black 통합 대체) ───────────────────
+[tool.ruff]
+line-length = 88
+target-version = "py312"
+
+# 검사 대상 / 제외
+include = ["**/*.py"]
+exclude = [
+    "__pycache__",
+    ".venv",
+    "alembic/versions/",   # 마이그레이션 자동생성 파일 제외
+    "apps/data/",          # 데이터 디렉토리 제외
+]
+
+[tool.ruff.lint]
+select = [
+    "E",   # pycodestyle errors
+    "W",   # pycodestyle warnings
+    "F",   # pyflakes (미사용 import, 미정의 변수 등)
+    "I",   # isort (import 순서)
+    "N",   # pep8-naming (명명 규칙)
+    "UP",  # pyupgrade (Python 3.12 신문법 권장)
+    "B",   # flake8-bugbear (흔한 버그 패턴)
+    "C4",  # flake8-comprehensions (불필요한 comprehension 단순화)
+    "SIM", # flake8-simplify (단순화 가능한 코드 탐지)
+    "TCH", # flake8-type-checking (TYPE_CHECKING 블록 활용 권장)
+]
+ignore = [
+    "E501",  # line-length — ruff format 이 처리하므로 중복 비활성
+    "N999",  # module name (apps/ 구조상 점(.) 포함 허용)
+    "B008",  # FastAPI Depends() 는 함수 호출 기본값으로 사용이 정상 패턴
+]
+
+# Star import 허용 예외 — __init__.py 에서 re-export 용도
+[tool.ruff.lint.per-file-ignores]
+"**/__init__.py" = ["F401"]   # 미사용 import (re-export 허용)
+"**/dependencies/*.py" = ["B006"]  # composition root 의존성 주입 허용
+
+[tool.ruff.lint.isort]
+known-first-party = [
+    "titanic", "siliconvalley", "mfds_user", "mfds_admin",
+    "imitation_game", "inception", "social_network", "star_craft",
+    "matrix",
+]
+# star_craft(hub) → spoke 순서로 import 정렬
+section-order = [
+    "future", "standard-library", "third-party",
+    "first-party", "local-folder",
+]
+
+[tool.ruff.format]
+quote-style = "double"
+indent-style = "space"
+line-ending = "lf"
+
+# ── Mypy — 정적 타입 검사 ──────────────────────────────────────────────────────
+# 기존 코드베이스에 점진적 적용: 신규 파일은 strict, 레거시는 warn 수준
+[tool.mypy]
+python_version = "3.12"
+exclude = [
+    "alembic/",
+    "apps/data/",
+]
+
+# 기본: 타입 힌트 누락 경고 (에러 아님 — 점진적 도입)
+warn_return_any = true
+warn_unused_configs = true
+warn_unused_ignores = true
+disallow_untyped_calls = false   # 레거시 코드 호환성
+
+# SQLAlchemy / FastAPI 전용 플러그인
+plugins = ["pydantic.mypy"]
+
+[[tool.mypy.overrides]]
+# 신규 star_craft Hub 모듈은 strict 강제 (Hub 는 타입 엄격 유지)
+module = "star_craft.*"
+disallow_untyped_defs = true
+disallow_any_generics = true
+strict = true
+
+[[tool.mypy.overrides]]
+# 서드파티 타입 stub 없는 라이브러리 — ignore
+module = [
+    "kiwipiepy.*",
+    "ollama.*",
+    "apscheduler.*",
+    "Crypto.*",
+]
+ignore_missing_imports = true
+
+[tool.pydantic-mypy]
+init_forbid_extra = true
+init_typed = true
+warn_required_dynamic_aliases = true

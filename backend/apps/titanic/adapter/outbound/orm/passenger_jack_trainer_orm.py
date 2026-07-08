@@ -1,0 +1,18 @@
+from __future__ import annotations
+
+from sqlalchemy import String
+from sqlalchemy.orm import Mapped, mapped_column
+
+from matrix.grid_oracle_database_manager import Base
+
+
+class JackTrainerOrm(Base):
+    __tablename__ = "titanic_persons"
+
+    passenger_id: Mapped[str | None] = mapped_column(String, primary_key=True, nullable=True)
+    name: Mapped[str | None] = mapped_column(String, nullable=True)
+    gender: Mapped[str | None] = mapped_column(String, nullable=True)
+    age: Mapped[str | None] = mapped_column(String, nullable=True)
+    sib_sp: Mapped[str | None] = mapped_column(String, nullable=True)
+    parch: Mapped[str | None] = mapped_column(String, nullable=True)
+    survived: Mapped[str | None] = mapped_column(String, nullable=True)

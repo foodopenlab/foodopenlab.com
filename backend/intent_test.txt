@@ -1,0 +1,4 @@
+﻿{"q": "33???⑥꽦???앹〈??, "intent": "SURVIVAL_PREDICT", "keywords": ["??, "?⑥꽦", "?앹〈"], "scores": {"SURVIVAL_PREDICT": 2, "STATISTICS": 0, "PASSENGER_SEARCH": 0, "MODEL_TRAIN": 0}}
+{"q": "?앹〈?⑥뿉 以묒슂??寃껋씠 萸먯빞 ?", "intent": "SURVIVAL_PREDICT", "keywords": ["?앹〈", "以묒슂", "寃?], "scores": {"SURVIVAL_PREDICT": 1, "STATISTICS": 0, "PASSENGER_SEARCH": 0, "MODEL_TRAIN": 0}}
+{"q": "?밴컼 ?듦퀎 ?뚮젮以?, "intent": "STATISTICS", "keywords": ["?밴컼", "?듦퀎", "?뚮━"], "scores": {"SURVIVAL_PREDICT": 0, "STATISTICS": 1, "PASSENGER_SEARCH": 1, "MODEL_TRAIN": 0}}
+{"q": "紐⑤뜽 ?숈뒿 寃곌낵", "intent": "MODEL_TRAIN", "keywords": ["紐⑤뜽", "?숈뒿", "寃곌낵"], "scores": {"SURVIVAL_PREDICT": 0, "STATISTICS": 0, "PASSENGER_SEARCH": 0, "MODEL_TRAIN": 2}}

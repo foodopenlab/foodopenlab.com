@@ -1,0 +1,32 @@
+# Node deps & build output (reinstalled/rebuilt inside image)
+node_modules/
+.next/
+out/
+dist/
+build/
+.turbo/
+.vercel/
+tsconfig.tsbuildinfo
+
+# Secrets & local env
+.env*.local
+.env
+.env.*
+!.env.example
+
+# VCS & editor
+.git/
+.gitignore
+.vscode/
+.idea/
+.cursor/
+
+# Logs
+npm-debug.log*
+pnpm-debug.log*
+yarn-error.log*
+
+# OS
+.DS_Store
+Thumbs.db
+desktop.ini

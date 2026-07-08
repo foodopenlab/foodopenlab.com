@@ -1,0 +1,93 @@
+# .pre-commit-config.yaml — 모노레포 하네스 pre-commit 설정
+# 목적: Karpathy 하네스 — 커밋 전에 린터/검증이 자동으로 돌아 깨진 코드가
+#       리포지터리에 진입하지 못하도록 막는다.
+#
+# 설치:
+#   pip install pre-commit
+#   pre-commit install        ← .git/hooks/pre-commit 자동 등록
+#
+# 전체 수동 실행:
+#   pre-commit run --all-files
+
+default_language_version:
+  python: python3.12
+
+repos:
+
+  # ── 공통 기본 훅 ──────────────────────────────────────────────────────────
+  - repo: https://github.com/pre-commit/pre-commit-hooks
+    rev: v4.6.0
+    hooks:
+      - id: trailing-whitespace
+      - id: end-of-file-fixer
+      - id: check-yaml
+      - id: check-json
+      - id: check-merge-conflict
+      - id: check-added-large-files
+        args: ["--maxkb=500"]
+      - id: detect-private-key            # 비밀키 커밋 방지
+
+  # ── Python (com.auditor/) ─────────────────────────────────────────────────
+  - repo: local
+    hooks:
+      - id: ruff-lint
+        name: "[Python] Ruff lint"
+        entry: ruff check --fix
+        language: system
+        types: [python]
+        files: ^com\.auditor/
+        pass_filenames: true
+
+      - id: ruff-format
+        name: "[Python] Ruff format"
+        entry: ruff format
+        language: system
+        types: [python]
+        files: ^com\.auditor/
+        pass_filenames: true
+
+      - id: mypy
+        name: "[Python] Mypy type check"
+        entry: bash -c 'cd com.auditor && mypy .'
+        language: system
+        types: [python]
+        files: ^com\.auditor/
+        pass_filenames: false             # mypy 는 전체 프로젝트 단위로 실행
+
+  # ── Star Topology 하네스 검증 (com.auditor/) ──────────────────────────────
+  - repo: local
+    hooks:
+      - id: harness-validator
+        name: "[Harness] Star Topology validation"
+        entry: bash -c 'cd com.auditor && python scripts/validate-harness.py'
+        language: system
+        pass_filenames: false
+        always_run: false
+        files: ^com\.auditor/apps/.*\.py$  # spoke Python 파일 변경 시만 실행
+
+  # ── Next.js (watcher.www/) ────────────────────────────────────────────────
+  - repo: local
+    hooks:
+      - id: eslint
+        name: "[Next.js] ESLint"
+        entry: bash -c 'cd watcher.www && pnpm eslint --fix'
+        language: system
+        types_or: [ts, tsx, javascript]
+        files: ^watcher\.www/
+        pass_filenames: false
+
+      - id: prettier
+        name: "[Next.js] Prettier format"
+        entry: bash -c 'cd watcher.www && pnpm prettier --write'
+        language: system
+        types_or: [ts, tsx, javascript, css]
+        files: ^watcher\.www/
+        pass_filenames: true
+
+      - id: tsc
+        name: "[Next.js] TypeScript check"
+        entry: bash -c 'cd watcher.www && pnpm tsc --noEmit'
+        language: system
+        types: [ts]
+        files: ^watcher\.www/
+        pass_filenames: false
