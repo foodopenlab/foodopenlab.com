@@ -1,5 +1,21 @@
 # Backend Version Log
 
+## [v0.1.13] - 2026-07-13
+
+### Changed
+- `apps/vision` Bounded Context를 허브 `apps/ontology`로 통합하고 `apps/vision` 폴더 삭제. vision의 `adapter·app·dependencies·domain·resources·tests`를 `ontology/` 하위로 이동하고, 이동된 모든 파일과 `main.py`의 import 접두어를 `vision.` → `ontology.`로 치환(파일명·심볼명 `vision_*`/`face_recognition_*`는 유지). vision CLI docstring의 예시 경로도 `apps/vision/` → `apps/ontology/`로 수정. 기존 `ontology.channel`/`ontology.classification` 어휘(`braindead`가 참조)는 그대로 유지되며 import 무영향. 라우터 체인(`ontology.adapter.inbound.api.vision_router`) import 검증 및 하네스 토폴로지 검증(고립·허브 순환) 통과.
+
+- `apps/ontology`의 비프랙탈 최상위 어휘 폴더 `channel/`·`classification/`(순수 `str, Enum` Value Object)을 프랙탈 정위치인 `domain/value_objects/` 아래로 이동(분류 그룹 유지). 이에 따라 `braindead`의 `MessageCategory` import 6곳을 `ontology.classification.message_category` → `ontology.domain.value_objects.classification.message_category`로 갱신. 이동 후 `ontology` 최상위는 순수 헥사고날 프랙탈 구조(adapter/app/dependencies/domain/tests/resources)만 남음. VO import·braindead 체인 검증 및 하네스 고립 노드 검증 통과.
+- `apps/ontology/_docs/star-craft-pipeline.md`를 실제 허브 패키지 `ontology` 기준으로 정합화: frontmatter `domain: star_craft` → `ontology`(하네스 hub 검증 INVALID 해소), 위치 경로 `backend/apps/star_craft/` → `backend/apps/ontology/`, 예제 import 경로·DI `star_craft.*` → `ontology.*`, Qdrant 컬렉션 `star_craft_global` → `ontology_global`, 다이어그램 식별자 `StarCraftUseCase` → `OntologyUseCase`, 예제 라우트 `/api/star-craft/context` → `/api/ontology/context`. 코드네임 테마 제목 "Star Craft Hub"는 유지.
+
+### Removed
+- `apps/vision/` 디렉토리 (내용 전부 `apps/ontology/`로 이관).
+
+## [v0.1.12] - 2026-07-09
+
+### Changed
+- CORS `allow_origins`를 하드코딩(localhost 전용)에서 `CORS_ORIGINS` 환경변수 기반으로 변경(`main.py`). 기본 로컬 오리진에 env로 지정한 운영 도메인을 더해 허용한다. Vercel 프론트(`https://foodopenlab.com`)가 Cloudflare 백엔드(`https://api.foodopenlab.com`)를 호출할 때 CORS 차단되던 문제 해결. 도메인 변경 시 이미지 재빌드 없이 `.env`만 수정하면 됨.
+
 ## [v0.1.11] - 2026-07-03
 
 ### Added

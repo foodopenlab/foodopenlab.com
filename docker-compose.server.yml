@@ -1,0 +1,138 @@
+# docker-compose.server.yml — 원격 서버 배포용 (Docker Hub 이미지 pull)
+#
+# 로컬 개발용 docker-compose.yaml 과의 차이:
+#   - backend: build 하지 않고 Docker Hub 이미지를 pull (kcs8815/foodopenlab-backend)
+#   - frontend 제외 (Vercel에 배포됨)
+#   - 소스 코드 bind mount 제거 (이미지에 구워진 코드를 그대로 사용)
+#   - GPU 예약 추가 (nvidia)
+#   - HF 모델 캐시를 named volume 으로 영속화
+#
+# 실행 전 서버에 필요한 파일:
+#   - 이 파일 (docker-compose.server.yml)
+#   - .env            ← 루트: POSTGRES_*, NEO4J_PASSWORD, LAW_API_KEY, CLOUDFLARE_TUNNEL_TOKEN, KOREAN_LAW_MCP_CORS_ORIGIN
+#   - backend/.env    ← 앱 런타임 설정 (DATABASE_URL, REDIS_URL, NEO4J_*, KOREAN_LAW_MCP_URL 등)
+#   ※ 루트 .env 의 NEO4J_PASSWORD 와 backend/.env 의 NEO4J_PASSWORD 값은 반드시 동일해야 함.
+
+services:
+  # ── Databases ──────────────────────────────────────────────────────
+  pgvector:
+    image: pgvector/pgvector:pg17
+    container_name: pgvector
+    restart: unless-stopped
+    ports:
+      - "5432:5432"
+    environment:
+      POSTGRES_USER: ${POSTGRES_USER}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD}
+      POSTGRES_DB: ${POSTGRES_DB}
+    volumes:
+      - pgvector_data:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U ${POSTGRES_USER} -d ${POSTGRES_DB}"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+  redis:
+    image: redis:7.4-alpine
+    container_name: redis
+    restart: unless-stopped
+    ports:
+      - "6379:6379"
+    volumes:
+      - redis_data:/data
+    healthcheck:
+      test: ["CMD", "redis-cli", "ping"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+  graph_db:
+    image: neo4j:5.18-community
+    container_name: graph_db
+    restart: unless-stopped
+    ports:
+      - "7474:7474"
+      - "7687:7687"
+    environment:
+      NEO4J_AUTH: neo4j/${NEO4J_PASSWORD}
+      NEO4J_PLUGINS: '["apoc"]'
+    volumes:
+      - neo4j_data:/data
+      - neo4j_logs:/logs
+    healthcheck:
+      test: ["CMD", "cypher-shell", "-u", "neo4j", "-p", "${NEO4J_PASSWORD}", "RETURN 1"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+  korean_law_mcp:
+    image: node:20-alpine
+    container_name: korean_law_mcp
+    restart: unless-stopped
+    working_dir: /app
+    command: >
+      sh -c "npm install -g korean-law-mcp &&
+             korean-law-mcp --mode http --port 3100"
+    ports:
+      - "3100:3100"
+    environment:
+      LAW_OC: ${LAW_API_KEY}
+      CORS_ORIGIN: ${KOREAN_LAW_MCP_CORS_ORIGIN:-http://localhost:8000}
+    healthcheck:
+      test: ["CMD-SHELL", "wget -q --spider http://127.0.0.1:3100/health 2>/dev/null; test $$? -ne 7"]
+      interval: 15s
+      timeout: 10s
+      retries: 10
+      start_period: 60s
+
+  # ── Application (Docker Hub 이미지) ─────────────────────────────────
+  backend:
+    image: kcs8815/foodopenlab-backend:latest
+    container_name: fastapi_backend
+    restart: unless-stopped
+    pull_policy: always
+    ports:
+      - "8000:8000"
+    env_file:
+      - ./backend/.env
+    environment:
+      OLLAMA_HOST: http://host.docker.internal:11434
+      HF_HOME: /hf_cache
+    volumes:
+      - hf_cache:/hf_cache
+    extra_hosts:
+      # Linux 서버에서 host.docker.internal 을 호스트로 해석 (호스트에 Ollama가 있을 때)
+      - "host.docker.internal:host-gateway"
+    deploy:
+      resources:
+        reservations:
+          devices:
+            - driver: nvidia
+              count: all
+              capabilities: [gpu]
+    depends_on:
+      pgvector:
+        condition: service_healthy
+      redis:
+        condition: service_healthy
+      graph_db:
+        condition: service_healthy
+      korean_law_mcp:
+        condition: service_healthy
+
+  # ── Tunnel ─────────────────────────────────────────────────────────
+  cloudflared:
+    image: cloudflare/cloudflared:latest
+    container_name: cloudflared
+    restart: unless-stopped
+    command: tunnel --no-autoupdate run --token ${CLOUDFLARE_TUNNEL_TOKEN}
+    depends_on:
+      - backend
+
+volumes:
+  pgvector_data:
+  redis_data:
+  neo4j_data:
+  neo4j_logs:
+  hf_cache:

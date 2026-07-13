@@ -1,6 +1,6 @@
 from dataclasses import dataclass
 
-from ontology.classification.message_category import MessageCategory
+from ontology.domain.value_objects.classification.message_category import MessageCategory
 
 
 @dataclass

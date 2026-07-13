@@ -1,6 +1,6 @@
 ---
 type: hub
-domain: star_craft
+domain: ontology
 links:
   - titanic
   - siliconvalley
@@ -16,7 +16,7 @@ db:
 
 # Star Craft Hub — Graph & Vector DB Pipeline 전략
 
-> **위치:** `backend/apps/star_craft/`  
+> **위치:** `backend/apps/ontology/`  
 > **역할:** 스타 토폴로지 허브 — 모든 Spoke의 지식이 교차하는 온톨로지 중심점  
 > **목표:** Docker 내 `graph.db`(Neo4j) · `vector.db`(Qdrant)에 접속하는 파이프라인을 헥사고날 아키텍처로 구현한다.
 
@@ -109,7 +109,7 @@ EMBEDDING_DIM=768
 ```
 [Inbound] Router / MCP / Schedule
         ↓
-[App]    StarCraftUseCase (Interactor)
+[App]    OntologyUseCase (Interactor)
         ↓
 [Port]   IGraphRepository (abstract)
          IVectorRepository (abstract)
@@ -124,7 +124,7 @@ EMBEDDING_DIM=768
 ```python
 # app/ports/graph_port.py
 from abc import ABC, abstractmethod
-from star_craft.app.dtos.graph_dto import NodeDTO, EdgeDTO, SubgraphDTO
+from ontology.app.dtos.graph_dto import NodeDTO, EdgeDTO, SubgraphDTO
 
 class IGraphRepository(ABC):
     @abstractmethod
@@ -143,7 +143,7 @@ class IGraphRepository(ABC):
 ```python
 # app/ports/vector_port.py
 from abc import ABC, abstractmethod
-from star_craft.app.dtos.vector_dto import VectorPointDTO, SearchResultDTO
+from ontology.app.dtos.vector_dto import VectorPointDTO, SearchResultDTO
 
 class IVectorRepository(ABC):
     @abstractmethod
@@ -166,7 +166,7 @@ class IVectorRepository(ABC):
 ```python
 # adapter/outbound/repositories/neo4j_repository.py
 from neo4j import AsyncGraphDatabase
-from star_craft.app.ports.graph_port import IGraphRepository
+from ontology.app.ports.graph_port import IGraphRepository
 
 class Neo4jRepository(IGraphRepository):
     def __init__(self, uri: str, user: str, password: str):
@@ -185,7 +185,7 @@ class Neo4jRepository(IGraphRepository):
 # adapter/outbound/repositories/qdrant_repository.py
 from qdrant_client import AsyncQdrantClient
 from qdrant_client.models import PointStruct, VectorParams, Distance
-from star_craft.app.ports.vector_port import IVectorRepository
+from ontology.app.ports.vector_port import IVectorRepository
 
 class QdrantRepository(IVectorRepository):
     def __init__(self, host: str, port: int):
@@ -203,9 +203,9 @@ class QdrantRepository(IVectorRepository):
 ```python
 # dependencies/__init__.py
 from functools import lru_cache
-from star_craft.adapter.outbound.repositories.neo4j_repository import Neo4jRepository
-from star_craft.adapter.outbound.repositories.qdrant_repository import QdrantRepository
-from star_craft.app.use_cases.hub_use_case import HubInteractor
+from ontology.adapter.outbound.repositories.neo4j_repository import Neo4jRepository
+from ontology.adapter.outbound.repositories.qdrant_repository import QdrantRepository
+from ontology.app.use_cases.hub_use_case import HubInteractor
 from core.matrix.config import settings
 
 @lru_cache
@@ -311,7 +311,7 @@ class HubInteractor:
 
 | 컬렉션명 | 내용 |
 |----------|------|
-| `star_craft_global` | Hub 전역 컨텍스트 |
+| `ontology_global` | Hub 전역 컨텍스트 |
 | `{domain}_knowledge` | 각 Spoke 도메인 지식 (예: `titanic_knowledge`) |
 
 ---
@@ -327,7 +327,7 @@ class HubInteractor:
 | 5 | `QdrantRepository` 어댑터 구현 | `upsert` → `GET /collections/{name}` 200 응답 |
 | 6 | `HubInteractor` 유스케이스 구현 | `register_spoke` → Graph 노드 + Vector 컬렉션 동시 생성 |
 | 7 | `dependencies/` DI 배선 | FastAPI `Depends` 체인 통과 |
-| 8 | Inbound 라우터 엔드포인트 노출 | `POST /api/star-craft/context` 200 |
+| 8 | Inbound 라우터 엔드포인트 노출 | `POST /api/ontology/context` 200 |
 | 9 | Spoke 온보딩 통합 테스트 | `titanic` → Hub 등록 → Graph+Vector 조회 성공 |
 
 ---
@@ -345,7 +345,7 @@ httpx = "^0.27"          # HTTP (임베딩 API 호출)
 
 ## 8. 아키텍처 제약 재확인
 
-- `star_craft` 내 순환 참조 금지 (Hub 자체 내 circular import)
+- `ontology` 내 순환 참조 금지 (Hub 자체 내 circular import)
 - `Neo4jRepository` · `QdrantRepository` 는 도메인 레이어를 import하지 않는다
 - Spoke는 Hub의 포트(추상)만 참조 — 어댑터 구현체 직접 참조 금지
 - 모든 DB I/O는 `async` — 블로킹 driver 사용 시 `asyncio.to_thread` 위임

@@ -95,7 +95,7 @@ from titanic.adapter.outbound.repositories.db_init import create_titanic_tables
 from siliconvalley.adapter.inbound.api import piper_router
 from braindead.adapter.inbound.api import braindead_router
 from braindead.adapter.outbound.repositories.db_init import create_contact_tables
-from vision.adapter.inbound.api import vision_router
+from ontology.adapter.inbound.api import vision_router
 
 
 logger = logging.getLogger(__name__)
@@ -279,13 +279,18 @@ async def lifespan(app: FastAPI):
 
 app = FastAPI(title="Foodopenlab Main Page", lifespan=lifespan)
 
+# 로컬 개발용 기본 오리진. 운영 도메인(Vercel/Cloudflare)은 CORS_ORIGINS 환경변수로 추가한다.
+# 예) CORS_ORIGINS=https://foodopenlab.com,https://www.foodopenlab.com
+_DEFAULT_CORS_ORIGINS = [
+    "http://localhost:3000",
+    "http://127.0.0.1:3000",
+    "http://192.168.0.49:3000",
+]
+_extra_cors_origins = [o.strip() for o in os.getenv("CORS_ORIGINS", "").split(",") if o.strip()]
+
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=[
-        "http://localhost:3000",
-        "http://127.0.0.1:3000",
-        "http://192.168.0.49:3000",
-    ],
+    allow_origins=_DEFAULT_CORS_ORIGINS + _extra_cors_origins,
     allow_credentials=False,
     allow_methods=["*"],
     allow_headers=["*"],

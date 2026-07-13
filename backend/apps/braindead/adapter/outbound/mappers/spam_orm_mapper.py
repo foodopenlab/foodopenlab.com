@@ -1,4 +1,4 @@
-from ontology.classification.message_category import MessageCategory
+from ontology.domain.value_objects.classification.message_category import MessageCategory
 
 from braindead.adapter.outbound.orm.spam_orm import SpamLogORM
 from braindead.app.dtos.spam_dto import SpamResultDTO

@@ -1,6 +1,6 @@
 from typing import Callable
 
-from ontology.classification.message_category import MessageCategory
+from ontology.domain.value_objects.classification.message_category import MessageCategory
 
 from braindead.app.dtos.spam_dto import SpamCheckCommand, SpamResultDTO
 from braindead.app.ports.input.spam_use_case import ISpamUseCase
