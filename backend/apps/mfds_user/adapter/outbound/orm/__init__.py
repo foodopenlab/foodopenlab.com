@@ -19,6 +19,7 @@ from mfds_user.adapter.outbound.orm.daily_report_orm import DailyReportORM
 from mfds_user.adapter.outbound.orm.report_feedback_orm import ReportFeedbackORM
 from mfds_user.adapter.outbound.orm.report_feedback_sections_orm import ReportFeedbackSectionORM
 from mfds_user.adapter.outbound.orm.report_feedback_analysis_orm import ReportFeedbackAnalysisORM
+from mfds_user.adapter.outbound.orm.law_chunk_orm import LawChunkORM
 
 __all__ = [
     "UserORM",
@@ -42,4 +43,5 @@ __all__ = [
     "ReportFeedbackORM",
     "ReportFeedbackSectionORM",
     "ReportFeedbackAnalysisORM",
+    "LawChunkORM",
 ]

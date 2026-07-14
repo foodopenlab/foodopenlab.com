@@ -1,5 +1,24 @@
 # Backend Version Log
 
+## [v0.1.17] - 2026-07-15
+
+### Added
+- `mfds_user`에 법령 시맨틱 검색(RAG) 프랙탈 세트 추가 — `law_chunks`(krcofoodrm에서 이관한 44,518청크, bge-m3 1024차원, HNSW cosine)를 대상으로. entity(`law_chunk_entity`)·orm(`law_chunk_orm`, pgvector `Vector`)·output port(`law_chunk_repository`)·pg repository(`law_chunk_pg_repository`, `cosine_distance` top-k)·dto(`law_chunk_dto`)·input port(`law_chunk_use_case`)·interactor(`law_chunk_interactor`, `grid_embedding_manager.embed_text`로 질문 임베딩)·schema·router(`GET /law-chunk/myself` 배선검증 + `POST /law-chunk/search`)·DI(`dependencies/law_chunk.py`). ORM은 `outbound/orm/__init__.py`에 등록, 라우터는 `user_router`에 편입. 매핑은 앱 관례대로 리포지토리·라우터 인라인.
+
+### Changed
+- `regulation_chat_interactor`를 하이브리드로 전환 — "최근 개정/처분/체계/절차" 키워드(`_pick_task`)는 기존 `korean_law_mcp` 실시간 조회 유지, 그 외 일반 질문은 `law_chunks` pgvector RAG로 조문 원문을 근거 제공(`_format_rag_context`/`_hits_to_refs` 추가). `dependencies/regulation_chat.py`가 `LawChunkInteractor`(+`get_db` 세션)를 주입. 시스템 프롬프트 라벨을 소스 중립적으로 수정.
+- RAG 근거를 **법령 원문만**으로 제한 — 챗 검색을 `source_types=("law","admrul")`(법률·시행령·시행규칙 + 고시/행정규칙)로 좁혀 판례·결정례·유권해석·가이드·FAQ를 근거에서 제외(`_LAW_SOURCE_TYPES`). 독립 `/law-chunk/search`는 무제한 유지.
+- 선택적 `source_type` 필터가 HNSW 근사 인덱스와 겹칠 때 전역 최근접 후보가 필터로 전부 걸러져 0건이 나오던 문제를, 필터 존재 시 `SET LOCAL hnsw.iterative_scan = strict_order`(pgvector 0.8) 적용으로 해소(`law_chunk_pg_repository`). E2E 검증: 필터 검색 6건(admrul), `/regulation-chat`(exaone3.5:7.8b)가 `식품 및 축산물 안전관리인증기준`(HACCP 고시)만 참조하며 시행규칙 제62조·별표 18 인용(29s).
+- 로컬 Ollama LLM 모델을 `exaone3.5:2.4b` → `exaone3.5:7.8b`로 변경(`backend/.env` `EXAONE_MODEL`·`BRAINDEAD_MODEL`) — 이전 PC에 2.4b 미설치, 설치된 7.8b에 맞춤.
+
+## [v0.1.16] - 2026-07-15
+
+### Changed
+- 개발+운영 머신을 새 Windows PC(`kimchungs`, i5-12400F / 32GB / RTX 3060 Ti 8GB)로 이전 완료. 깨진 git 인덱스 복구(`git reset`), DB 볼륨 5개(`comfoodopenlab_pgvector_data`·`_neo4j_data`·`_neo4j_logs`·`_redis_data`·`n8n_data`) `foodopenlab_db_backup/`에서 복원, `docker compose up -d`로 8개 서비스 정상 기동 확인(backend/frontend 200, pgvector 35 테이블, GPU 패스스루 작동). 우분투 서버 이전 계획은 폐기.
+
+### Removed
+- `docs/server_move.md` — Windows→Ubuntu 이전 절차 문서. 실제로는 Windows→Windows 이전이라 불필요해져 삭제(이전 완료 기록은 위 v0.1.16 로그로 대체).
+
 ## [v0.1.15] - 2026-07-14
 
 ### Added

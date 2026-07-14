@@ -6,16 +6,22 @@ import secrets
 from langchain_core.messages import AIMessage, HumanMessage, SystemMessage
 from langchain_ollama import ChatOllama
 
+from mfds_user.app.dtos.law_chunk_dto import LawChunkHit
 from mfds_user.app.dtos.regulation_chat_dto import (
     LawReference,
     RegulationChatQuery,
     RegulationChatResponse,
 )
+from mfds_user.app.ports.input.law_chunk_use_case import LawChunkSearchUseCase
 from mfds_user.app.ports.output.law_mcp_port import LawMcpPort, LawSearchResult
 
 logger = logging.getLogger(__name__)
 
 _NO_LAW_FOUND_REPLY = "확인이 필요합니다 — law.go.kr에서 직접 확인을 권장합니다."
+
+# 법령 원문만 근거로 사용: 법률·시행령·시행규칙(law) + 고시·행정규칙(admrul).
+# 판례(prec)·결정례(decc)·유권해석(expc)·가이드(guide)·참고자료(ref)·FAQ(faq)는 제외.
+_LAW_SOURCE_TYPES = ("law", "admrul")
 
 _AMENDMENT_KW = ("최근", "개정", "바뀐", "달라진", "변경", "신설", "폐지", "2025", "2026")
 _ACTION_BASIS_KW = ("처분", "과징금", "위반", "제재", "영업정지", "벌칙", "과태료", "행정처분")
@@ -36,8 +42,9 @@ def _pick_task(message: str) -> str | None:
 
 
 class RegulationChatInteractor:
-    def __init__(self, law_mcp: LawMcpPort) -> None:
+    def __init__(self, law_mcp: LawMcpPort, law_search: LawChunkSearchUseCase | None = None) -> None:
         self._law_mcp = law_mcp
+        self._law_search = law_search
         self._llm = ChatOllama(
             model=os.getenv("EXAONE_MODEL", "exaone3.5:2.4b"),
             base_url=os.getenv("OLLAMA_HOST", "http://host.docker.internal:11434"),
@@ -56,6 +63,19 @@ class RegulationChatInteractor:
                     referenced_laws=[],
                     session_key=query.session_key or f"reg-{secrets.token_hex(6)}",
                 )
+        elif self._law_search is not None:
+            # 일반 질문 → law_chunks pgvector RAG (조문 원문을 근거로 제공)
+            hits = await self._law_search.search(
+                query.message, top_k=6, source_types=_LAW_SOURCE_TYPES
+            )
+            if not hits:
+                return RegulationChatResponse(
+                    reply=_NO_LAW_FOUND_REPLY,
+                    referenced_laws=[],
+                    session_key=query.session_key or f"reg-{secrets.token_hex(6)}",
+                )
+            law_context = _format_rag_context(hits)
+            referenced_laws = _hits_to_refs(hits)
         else:
             laws = await self._law_mcp.search_laws(query.message)
             if not laws:
@@ -89,6 +109,29 @@ def _format_law_context(laws: list[LawSearchResult]) -> str:
     )
 
 
+def _format_rag_context(hits: list[LawChunkHit]) -> str:
+    blocks = []
+    for h in hits:
+        head = f"[{h.law_nm}"
+        detail = f"{h.article_no} {h.article_title}".strip()
+        if detail:
+            head += f" {detail}"
+        head += "]"
+        blocks.append(f"{head}\n{h.content.strip()}")
+    return "\n\n".join(blocks)
+
+
+def _hits_to_refs(hits: list[LawChunkHit]) -> list[LawSearchResult]:
+    """중복 법령명 제거 후 참조 목록으로 변환 (등장 순서 유지)."""
+    seen: set[str] = set()
+    refs: list[LawSearchResult] = []
+    for h in hits:
+        if h.law_nm and h.law_nm not in seen:
+            seen.add(h.law_nm)
+            refs.append(LawSearchResult(law_name=h.law_nm, law_id="", url=""))
+    return refs
+
+
 _FEW_SHOT = """
 [답변 예시 — 이 형식을 따르세요]
 
@@ -112,7 +155,7 @@ def _system_prompt(company_type: str, law_context: str) -> str:
     return f"""당신은 한국 식품법규 전문 AI입니다.
 사용자 회사 업종: {company_type}
 
-[MCP를 통해 조회한 법령 정보]
+[조회한 법령·고시·판례 정보]
 {law_context}
 
 [답변 규칙]

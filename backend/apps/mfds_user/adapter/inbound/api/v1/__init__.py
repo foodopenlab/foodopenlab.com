@@ -9,6 +9,7 @@ from mfds_user.adapter.inbound.api.v1.supplier_router import router as supplier_
 from mfds_user.adapter.inbound.api.v1.mypage_router import router as mypage_router
 from mfds_user.adapter.inbound.api.v1.regulation_router import router as regulation_router
 from mfds_user.adapter.inbound.api.v1.regulation_chat_router import router as regulation_chat_router
+from mfds_user.adapter.inbound.api.v1.law_chunk_router import router as law_chunk_router
 from mfds_user.adapter.inbound.api.v1.industry_router import router as industry_router
 from mfds_user.adapter.inbound.api.v1.daily_report_router import router as daily_report_router
 from mfds_user.adapter.inbound.api.v1.report_feedback_router import router as report_feedback_router
@@ -26,6 +27,7 @@ user_router.include_router(supplier_router)
 user_router.include_router(mypage_router)
 user_router.include_router(regulation_router)
 user_router.include_router(regulation_chat_router)
+user_router.include_router(law_chunk_router)
 user_router.include_router(industry_router)
 user_router.include_router(daily_report_router)
 user_router.include_router(report_feedback_router)
