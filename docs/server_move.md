@@ -130,32 +130,29 @@ Host foodopenlab
 현재 볼륨:
 `comfoodopenlab_pgvector_data`, `_redis_data`, `_neo4j_data`, `_neo4j_logs`, `n8n_data`(external)
 
-### 판단 기준
-| 볼륨 | 권장 |
-|---|---|
-| `n8n_data` | GUI 워크플로우가 코드에 없음 → **유지 이전 권장** |
-| `pgvector` / `neo4j` | alembic + 크롤러로 재구축 가능하면 **빈 상태로 새 시작** |
-| `redis` | 캐시 → **버려도 무방** |
+**결정: 전부 유지 이전.** 구 PC에서 5개 볼륨 백업 완료(2026-07-14).
 
-### (A) 빈 상태로 새로 시작
-아무것도 안 함. 새 컴에서 compose 올리면 자동 생성.
+### 1) 구 PC 백업 (완료됨)
+- 위치: `C:\Users\hi\Documents\foodopenlab_db_backup\`
+- 파일: `comfoodopenlab_pgvector_data.tar.gz`(57M), `_neo4j_data.tar.gz`, `_neo4j_logs.tar.gz`, `_redis_data.tar.gz`, `n8n_data.tar.gz`
+- **이 폴더를 통째로 서버로 전송** (USB 또는 `scp -r`).
 
-### (B) 기존 데이터 유지 이전
+### 2) 서버(우분투) 복원
 ```bash
-# 구 컴: 볼륨을 tar로 덤프
-docker run --rm -v comfoodopenlab_pgvector_data:/data -v "$PWD":/backup \
-  alpine tar czf /backup/pgvector_data.tar.gz -C /data .
-# (n8n_data 등 필요한 볼륨마다 반복)
+# 컨테이너 아직 안 띄운 상태에서 (또는 docker compose down 후)
+cd <백업폴더>          # tar.gz 5개가 있는 곳
 
-# 새 컴: 빈 볼륨 생성 후 복원
-docker volume create comfoodopenlab_pgvector_data
-docker run --rm -v comfoodopenlab_pgvector_data:/data -v "$PWD":/backup \
-  alpine tar xzf /backup/pgvector_data.tar.gz -C /data
+for v in comfoodopenlab_pgvector_data comfoodopenlab_neo4j_data \
+         comfoodopenlab_neo4j_logs comfoodopenlab_redis_data n8n_data; do
+  docker volume create "$v"
+  docker run --rm -v "$v":/data -v "$PWD":/backup \
+    alpine tar xzf "/backup/$v.tar.gz" -C /data
+done
 ```
-> 주의: Postgres/Neo4j **메이저 버전이 같아야** 복원 성공. compose 이미지 태그 확인.
-> `n8n_data` 는 `external: true` 라 새 컴에서도 `docker volume create n8n_data` 로 미리 만들어야 함.
-
-**→ 이 프로젝트에서 옮길 볼륨: (결정 후 여기 기록)**
+> ⚠️ **폴더 이름이 `com.foodopenlab` 여야** compose가 이 볼륨(`comfoodopenlab_` 접두어)을 인식 (§1).
+> ⚠️ Postgres/Neo4j **메이저 버전 동일**해야 복원 성공 — compose 이미지 태그 확인.
+> `n8n_data` 는 `external: true` 라 위 `docker volume create` 로 반드시 선생성 (compose가 자동생성 안 함).
+> 복원은 **`docker compose up` 전에** 완료할 것 (빈 볼륨이 먼저 생기면 안 됨).
 
 ---
 
