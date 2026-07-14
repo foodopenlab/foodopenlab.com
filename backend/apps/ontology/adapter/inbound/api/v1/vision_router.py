@@ -3,6 +3,7 @@ import tempfile
 from pathlib import Path
 
 from fastapi import APIRouter, Depends, File, HTTPException, UploadFile, status
+from matrix.grid_device_manager import resolve_device
 
 from ontology.adapter.inbound.api.schemas.vision_schema import (
     FacePredictionItem,
@@ -75,7 +76,7 @@ async def recognize_face(
         tmp.close()
         result = await asyncio.to_thread(
             use_case.recognize,
-            FaceRecognizeQuery(image_path=tmp.name, weights_path=str(_DEFAULT_WEIGHTS), device="cpu", top_k=3),
+            FaceRecognizeQuery(image_path=tmp.name, weights_path=str(_DEFAULT_WEIGHTS), device=resolve_device(), top_k=3),
         )
     finally:
         Path(tmp.name).unlink(missing_ok=True)

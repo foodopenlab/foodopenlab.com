@@ -1,5 +1,22 @@
 # Backend Version Log
 
+## [v0.1.15] - 2026-07-14
+
+### Added
+- `apps/moneyball`에 축구 ERD 4개 테이블 ORM 추가 — `stadium`/`team`/`schedule`/`player` (`adapter/outbound/orm/*_orm.py`). 각 테이블에 pgvector 시맨틱 검색용 임베딩 컬럼(`stadium_embedding`/`team_strategy_embedding`/`match_summary_embedding`/`player_profile_embedding`)을 `Vector(EMBEDDING_DIM)` = 1024차원(로컬 bge-m3)으로 정의. `soccer-database.md` 명세의 1536(OpenAI)이 아닌, 프로젝트 실제 임베딩 파이프라인(`grid_embedding_manager`)과 일치하도록 1024 채택. FK(team→stadium, schedule→stadium, player→team), `schedule` 복합 PK(`sche_date`,`stadium_id`), ERD 원본 오타 `statdium_name` 유지.
+- Alembic 마이그레이션 `1e4fd7b6809c` 추가 — `CREATE EXTENSION IF NOT EXISTS vector` 후 4개 테이블 생성(`Base.metadata.create_all`, checkfirst). 기존 DB는 alembic 미스탬프 상태였어 `alembic stamp head`로 정합화 후 신규 리비전만 적용. 검증: 익스텐션(0.8.3)·4개 테이블·1024차원 벡터 INSERT(dim=1024)·FK 거부·복합 PK 동작 확인.
+
+### Changed
+- `alembic/env.py`에 moneyball ORM 4개 import 등록(메타데이터 편입).
+
+## [v0.1.14] - 2026-07-14
+
+### Added
+- `core/matrix/grid_device_manager.py` 추가 — `resolve_device()`가 torch 추론 디바이스를 자동 선택(우선순위: 인자 > `TORCH_DEVICE` 환경변수 > CUDA 감지). CUDA GPU가 있으면 `"cuda"`, 없으면 `"cpu"`. apps/ 전역 공유 인프라(허브).
+
+### Changed
+- `apps/ontology`의 얼굴 인식 HTTP 추론 엔드포인트(`vision_router.py`)가 `device="cpu"` 하드코딩 대신 `resolve_device()`를 사용 — GPU가 있으면 자동으로 GPU 추론. CLI(`face_recognition_cli.py`)는 이미 `--device 0`(GPU) 기본값이라 무변경.
+
 ## [v0.1.13] - 2026-07-13
 
 ### Changed

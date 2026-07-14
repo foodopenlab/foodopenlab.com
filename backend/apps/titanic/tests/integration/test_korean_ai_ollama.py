@@ -1,4 +1,4 @@
-"""Kiwi 전처리 + Ollama EEVE-Korean 연동 확인 (로컬 Ollama 필요)."""
+"""Kiwi 전처리 + Ollama Exaone 연동 확인 (로컬 Ollama 필요)."""
 
 from __future__ import annotations
 
@@ -18,7 +18,7 @@ _kiwi = Kiwi()
 _DEFAULT_QUESTION = (
     "자연어처리는 넘흐 재밌어요. 올라마와 키위 라이브러리의 장점을 짧게 요약해줘."
 )
-_OLLAMA_MODEL = "anpigon/eeve-korean-10.8b:latest"
+_OLLAMA_MODEL = "exaone3.5:2.4b"
 
 
 def run_korean_ai(user_text: str) -> str:

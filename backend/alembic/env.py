@@ -25,6 +25,10 @@ import titanic.adapter.outbound.orm.titanic_booking_orm  # noqa: F401, E402
 import titanic.adapter.outbound.orm.crew_smith_captain_orm  # noqa: F401, E402
 import mfds_user.adapter.outbound.orm  # noqa: F401, E402
 import mfds_admin.adapter.outbound.orm  # noqa: F401, E402
+import moneyball.adapter.outbound.orm.stadium_orm  # noqa: F401, E402
+import moneyball.adapter.outbound.orm.team_orm  # noqa: F401, E402
+import moneyball.adapter.outbound.orm.schedule_orm  # noqa: F401, E402
+import moneyball.adapter.outbound.orm.player_orm  # noqa: F401, E402
 
 config = context.config
 

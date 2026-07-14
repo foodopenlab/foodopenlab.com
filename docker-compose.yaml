@@ -79,12 +79,19 @@ services:
     volumes:
       - ./backend:/app
       - /app/__pycache__
-      - D:/hf_cache:/hf_cache
+      - ${HF_CACHE_DIR:-./hf_cache}:/hf_cache
     env_file:
       - ./backend/.env
     environment:
       OLLAMA_HOST: http://host.docker.internal:11434
       HF_HOME: /hf_cache
+    deploy:
+      resources:
+        reservations:
+          devices:
+            - driver: nvidia
+              count: all
+              capabilities: [gpu]
     depends_on:
       pgvector:
         condition: service_healthy
