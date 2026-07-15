@@ -95,6 +95,7 @@ from titanic.adapter.outbound.repositories.db_init import create_titanic_tables
 from siliconvalley.adapter.inbound.api import piper_router
 from braindead.adapter.inbound.api import braindead_router
 from braindead.adapter.outbound.repositories.db_init import create_contact_tables
+from ontology.adapter.outbound.repositories.db_init import create_ontology_tables
 from ontology.adapter.inbound.api import vision_router
 
 
@@ -233,6 +234,7 @@ async def lifespan(app: FastAPI):
     await create_admin_tables()
     await create_titanic_tables()
     await create_contact_tables()
+    await create_ontology_tables()
     await asyncio.to_thread(preload_food_safety_caches)
     await ensure_food_safety_db_cache_on_startup()
     await ensure_food_poisoning_stat_db_cache_on_startup()

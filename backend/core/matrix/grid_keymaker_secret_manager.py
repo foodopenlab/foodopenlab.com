@@ -8,16 +8,10 @@ from typing import Any
 
 from matrix.external_api_budget import consume_external_api_unit_or_raise
 
-# Google AI Studio 권장 모델 (할당량 초과 시 아래 순서로 대체 시도)
-# - gemini-2.5-flash-lite: 안정화·저비용 (기본)
-# - gemini-2.5-flash: 2.5 Flash
-# - gemini-3.1-flash-lite: 3세대 경량
-DEFAULT_GEMINI_MODEL = "gemini-2.5-flash-lite"
-FALLBACK_GEMINI_MODELS = (
-    "gemini-2.5-flash-lite",
-    "gemini-2.5-flash",
-    "gemini-3.1-flash-lite",
-)
+# Google AI Studio 사용 모델
+# - gemini-3.5-flash: 유일 모델 (무료 15 RPM / 1M TPM / 1,500 RPD)
+DEFAULT_GEMINI_MODEL = "gemini-3.5-flash"
+FALLBACK_GEMINI_MODELS = ("gemini-3.5-flash",)
 
 
 def default_backend_env_path() -> Path:

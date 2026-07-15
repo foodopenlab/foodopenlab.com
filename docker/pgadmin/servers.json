@@ -1,0 +1,13 @@
+{
+  "Servers": {
+    "1": {
+      "Name": "pgvector (foodopenlab)",
+      "Group": "Servers",
+      "Host": "pgvector",
+      "Port": 5432,
+      "MaintenanceDB": "foodopenlab",
+      "Username": "pguser",
+      "SSLMode": "prefer"
+    }
+  }
+}

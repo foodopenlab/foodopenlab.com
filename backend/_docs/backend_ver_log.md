@@ -1,5 +1,26 @@
 # Backend Version Log
 
+## [v0.2.0] - 2026-07-15
+
+### Added
+- `apps/ontology`에 **시맨틱 게이트웨이**(Hub) 추가 — 챗봇 단일 진입점 `POST /api/gateway/ask`. 질문을 EXAONE(`exaone3.5:2.4b`)로 JSON 4-way 분류(`search`/`rag`/`general`/`reject`) 후 목적지별 위임. 프랙탈 세트: dto+enum(`gateway_dto`의 `Destination`/`Intent`/`GatewayQuery`/`GatewayResult`)·input port(`gateway_use_case`)·interactor(`gateway_interactor`, 조건문 대신 dispatch table)·output ports(`intent_classifier_port`/`rag_port`/`search_port`/`gemini_port`/`audit_log_port`)·adapters(`exaone_intent_classifier_adapter` `format=json`, `gemini_adapter`, `law_rag_adapter`, `law_search_adapter`)·router(`gateway_router`, `/myself` 배선검증 포함)·DI(`gateway_provider`). 분기: `general`→Gemini, `rag`→EXAONE+law_chunks RAG, `search`→law_chunks 키워드 조회, `reject`→고정 차단응답.
+- `rag`/`search`는 Hub→Spoke 재사용 — `law_rag_adapter`가 `mfds_user`의 `embed_text`(bge-m3)+`LawChunkPgRepository`(pgvector top-6, `source_types=("law","admrul")`)로 조문 검색 후 EXAONE가 근거 답변 생성, `law_search_adapter`가 `LawChunkORM` ILIKE 키워드 조회(생성 없이 목록).
+- **감사 로그 테이블** `gateway_audit_logs`(ontology 첫 DB 테이블) — entity(`gateway_audit_log_entity`)·orm(`gateway_audit_log_orm`, `question`/`destination`/`entities` JSONB/`blocked`/`answer_preview`/`client_ip`/`latency_ms`)·port(`audit_log_port`)·repository(`gateway_audit_log_repository`). 모든 요청·분류결과를 append(로그 실패는 응답을 막지 않음). `create_ontology_tables`(`db_init`) 신설 + `main.py` lifespan 등록, ORM은 `outbound/orm/__init__.py`에 등록. pgAdmin으로 모니터링.
+- **Rate limit** — `core/matrix/grid_redis_manager.py`(Redis async 싱글톤) 추가, `ontology/dependencies/rate_limit.py`(IP당 분당 30회 fixed window, `GATEWAY_RATE_LIMIT_PER_MIN`, Redis 장애 시 fail-open)를 `gateway_router`에 LLM 분류 이전 게이트로 적용. 초과 시 429. E2E: 카운터 프리셋 후 31번째 429 확인.
+- 개발용 **pgAdmin** 서비스(`docker-compose.yaml`, `dpage/pgadmin4` :5050, `docker/pgadmin/servers.json`로 pgvector 자동 등록) — pgvector DB 조회·모니터링. 문서 `apps/mfds_user/_docs/pgadmin.md`.
+- 의존성 추가(`requirements.txt`): `google-genai==2.11.0`(keymaker의 Gemini 클라이언트가 전제하나 미설치였음 — 리포트·피드백 등 기존 Gemini 기능도 함께 복구), `redis==8.0.1`.
+
+### Changed
+- Gemini 모델을 `gemini-3.5-flash` 단일 구성으로 변경(`grid_keymaker_secret_manager`의 `DEFAULT_GEMINI_MODEL`·`FALLBACK_GEMINI_MODELS`) — 하위 폴백 모델(2.5-flash/lite) 제거. 모든 Gemini 호출(게이트웨이 general + 일일 리포트 + 피드백 분석)에 일괄 적용. 무료 티어 15 RPM/1M TPM/1,500 RPD.
+- `ontology/gemini_adapter`를 graceful하게 — 미연결·호출 실패 시 예외 대신 안내 문구 반환(게이트웨이 general이 500 대신 응답+로그 유지).
+
+### Fixed
+- `backend/.env`의 `REDIS_URL` 오염 수정 — `redis://redis:6379/0WEATHER_API_KEY=...`처럼 줄바꿈 누락으로 `WEATHER_API_KEY`가 값에 붙어 있어 Redis 연결과 날씨·식중독 위험등급 기능(`risk_and_llm_adapters`, `main.py` 날씨 엔드포인트)이 깨져 있던 것을 두 줄로 분리해 복구.
+
+### Removed
+- `mfds_user`의 `GeminiAdapter`(`LlmPort` 구현) 삭제 — 어디에도 배선되지 않은 dead code. 챗봇 LLM은 `OllamaAdapter`(EXAONE)로 고정, Gemini는 keymaker 경유만 사용하는 결정에 따름.
+- `ontology`의 Gemini 직접 엔드포인트 제거(`gemini_router`/`gemini_schema`/`gemini_provider`/`gemini_interactor`/`gemini_use_case`/`gemini_dto`) — 게이트웨이를 우회해 rate limit·분류·감사로그를 건너뛰는 뒷문 차단. `gemini_adapter`/`gemini_port`는 게이트웨이 general 경로가 재사용하므로 유지.
+
 ## [v0.1.17] - 2026-07-15
 
 ### Added

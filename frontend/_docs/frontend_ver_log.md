@@ -1,5 +1,11 @@
 # Frontend Version Log
 
+## [v0.1.8] - 2026-07-15
+
+### Changed
+- 법규채팅(`app/api/regulation-chat/route.ts`)과 원료분석채팅(`app/api/analysis-chat/route.ts`)을 백엔드 **시맨틱 게이트웨이**(`/api/gateway/ask`, backend_ver_log v0.2.0) 프록시로 전환. 기존의 백엔드 `/regulation-chat`·`/analysis-chat` 직접 호출과 프론트 측 Gemini/법령 RAG fallback(`@/lib/server/gemini-generate`, `@/lib/server/law-api`)을 제거 — 질문 유형 분기·감사로그·rate limit이 게이트웨이에서 일괄 적용됨. UI 계약은 유지(`{ reply, session_key, ... }`)하되 `destination` 필드 추가. E2E: 법규채팅 `dest=rag`, 원료분석채팅 `dest=general`로 게이트웨이 경유 및 `gateway_audit_logs` 적재 확인.
+- 위 전환으로 `regulation-chat`의 `referenced_laws`는 빈 배열, `company_type`(업종 필터)은 미사용이 됨(게이트웨이 rag 응답이 아직 참조 법령·업종을 반환하지 않음). 랜딩 도우미(`app/api/gemini/chat/route.ts`)는 삭제 예정이라 미변경.
+
 ## [v0.1.7] - 2026-07-03
 
 ### Added

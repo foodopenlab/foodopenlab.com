@@ -1,21 +1,21 @@
 {
-  "fetched_at": "2026-07-02T10:20:23.082915+09:00",
+  "fetched_at": "2026-07-15T10:21:18.345027+09:00",
   "error": null,
   "is_today": false,
-  "matched_date": "2026-07-01",
+  "matched_date": "2026-07-13",
   "items": [
     {
-      "business_name": "우리홈마트 내 정육코너",
-      "industry": "식육즉석판매가공업",
-      "disposition_date": "20260701",
-      "disposition_start": "20260701",
-      "disposition_type": "과징금부과",
-      "violation": "(20251020)너. 보존 및 유통기준을 위반한 경우",
-      "address": "강원특별자치도 원주시 북원로 2638 (태장동)",
+      "business_name": "광명수산",
+      "industry": "일반음식점",
+      "disposition_date": "20260713",
+      "disposition_start": "20260713",
+      "disposition_type": "영업소폐쇄",
+      "violation": "(20260413)영업장 시설물 무단멸실",
+      "address": "경기도 수원시 권선구 금호로 196(탑동,외4필지 1층)",
       "representative": "이**",
-      "disposition_detail": "과징금(14,770천원)",
-      "agency": "강원특별자치도 원주시",
-      "serial_no": "4708194",
+      "disposition_detail": "영업소폐쇄",
+      "agency": "경기도 수원시 권선구",
+      "serial_no": "4720300",
       "category": "행정처분",
       "service_id": "I0470"
     }
