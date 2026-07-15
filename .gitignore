@@ -101,3 +101,6 @@ temp/
 .DS_Store
 Thumbs.db
 desktop.ini
+
+# DB 볼륨 백업 (대용량 바이너리 — git 추적 금지)
+foodopenlab_db_backup/
