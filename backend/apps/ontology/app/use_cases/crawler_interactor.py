@@ -4,9 +4,10 @@ import logging
 from collections import deque
 from urllib.parse import urldefrag, urlparse
 
-from ontology.app.dtos.crawl_dto import CrawlReport, CrawlRequest
+from ontology.app.dtos.crawl_dto import CrawlFinding, CrawlReport, CrawlRequest
 from ontology.app.ports.input.crawler_use_case import ICrawlerUseCase
 from ontology.app.ports.output.crawl_queue_port import ICrawlQueuePort
+from ontology.app.ports.output.crawl_sink_port import ICrawlSinkPort
 from ontology.app.ports.output.crawl_source_port import ICrawlSourcePort
 from ontology.app.ports.output.web_fetcher_port import IWebFetcherPort
 from ontology.domain.value_objects.web.keyword_matcher import KeywordSet
@@ -26,10 +27,12 @@ class CrawlerInteractor(ICrawlerUseCase):
         source: ICrawlSourcePort,
         fetcher: IWebFetcherPort,
         queue: ICrawlQueuePort,
+        sink: ICrawlSinkPort,
     ) -> None:
         self._source = source
         self._fetcher = fetcher
         self._queue = queue
+        self._sink = sink
 
     async def crawl(self, request: CrawlRequest) -> CrawlReport:
         seed = request.seed or await self._source.next_seed()
@@ -46,6 +49,7 @@ class CrawlerInteractor(ICrawlerUseCase):
         visited: set[str] = set()
         frontier: deque[tuple[str, int]] = deque([(_normalize(seed), 0)])
         relevant: list[str] = []
+        findings: list[CrawlFinding] = []
         pages_visited = 0
 
         while frontier and pages_visited < request.max_pages:
@@ -59,8 +63,12 @@ class CrawlerInteractor(ICrawlerUseCase):
             if not page.ok:
                 continue
 
-            if keywords.any_match(f"{page.title} {page.text}"):
+            matched = keywords.matches(f"{page.title} {page.text}")
+            if keywords.is_empty or matched:
                 relevant.append(url)
+                findings.append(
+                    CrawlFinding(url=url, title=page.title, matched_keywords=matched)
+                )
 
             if depth < request.max_depth:
                 for link in page.links:
@@ -68,11 +76,15 @@ class CrawlerInteractor(ICrawlerUseCase):
                     if urlparse(target).netloc == seed_host and target not in visited:
                         frontier.append((target, depth + 1))
 
-        enqueued = await self._queue.enqueue(relevant)
+        # 결과는 항상 resources 파일로 저장한다(사용자가 직접 확인·필터링하는 원천).
+        await self._sink.save(findings)
+        # 스크래퍼 큐 자동 적재는 옵션 — 스카우트 경로는 필터링 전 적재를 막으려 끈다.
+        enqueued = await self._queue.enqueue(relevant) if request.enqueue_to_scraper else 0
         logger.info(
-            "[CrawlerInteractor] seed=%s visited=%d enqueued=%d",
+            "[CrawlerInteractor] seed=%s visited=%d saved=%d enqueued=%d",
             seed,
             pages_visited,
+            len(findings),
             enqueued,
         )
         return CrawlReport(
@@ -80,6 +92,7 @@ class CrawlerInteractor(ICrawlerUseCase):
             keywords=list(keywords.values),
             pages_visited=pages_visited,
             urls_enqueued=enqueued,
+            findings_saved=len(findings),
         )
 
 

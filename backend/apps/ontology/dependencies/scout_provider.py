@@ -3,11 +3,15 @@ from fastapi import Depends
 from ontology.adapter.outbound.llm.gemini_command_interpreter_adapter import (
     GeminiCommandInterpreterAdapter,
 )
+from ontology.adapter.outbound.redis.redis_scout_request_sink_adapter import (
+    RedisScoutRequestSinkAdapter,
+)
 from ontology.app.ports.input.crawler_use_case import ICrawlerUseCase
 from ontology.app.ports.input.scout_use_case import IScoutUseCase
 from ontology.app.ports.input.scraper_use_case import IScraperUseCase
 from ontology.app.ports.output.command_interpreter_port import ICommandInterpreterPort
 from ontology.app.ports.output.gemini_port import IGeminiPort
+from ontology.app.ports.output.scout_request_sink_port import IScoutRequestSinkPort
 from ontology.app.use_cases.scout_interactor import ScoutInteractor
 from ontology.dependencies.crawler_provider import get_crawler_use_case
 from ontology.dependencies.gateway_provider import get_gemini_port
@@ -20,9 +24,19 @@ def get_command_interpreter(
     return GeminiCommandInterpreterAdapter(gemini=gemini)
 
 
+def get_scout_request_sink() -> IScoutRequestSinkPort:
+    return RedisScoutRequestSinkAdapter()
+
+
 def get_scout_use_case(
     interpreter: ICommandInterpreterPort = Depends(get_command_interpreter),
     crawler: ICrawlerUseCase = Depends(get_crawler_use_case),
     scraper: IScraperUseCase = Depends(get_scraper_use_case),
+    request_sink: IScoutRequestSinkPort = Depends(get_scout_request_sink),
 ) -> IScoutUseCase:
-    return ScoutInteractor(interpreter=interpreter, crawler=crawler, scraper=scraper)
+    return ScoutInteractor(
+        interpreter=interpreter,
+        crawler=crawler,
+        scraper=scraper,
+        request_sink=request_sink,
+    )

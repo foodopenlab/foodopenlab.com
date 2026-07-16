@@ -44,6 +44,7 @@ const SUMMARY_LABELS: Record<string, string> = {
   seed: "시드",
   keywords: "키워드",
   pages_visited: "방문 페이지",
+  findings_saved: "저장된 관련 URL",
   urls_enqueued: "적재 URL",
   urls_processed: "처리 URL",
   items_scraped: "스크랩 항목",

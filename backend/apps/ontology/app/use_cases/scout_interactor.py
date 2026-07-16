@@ -9,6 +9,7 @@ from ontology.app.ports.input.crawler_use_case import ICrawlerUseCase
 from ontology.app.ports.input.scout_use_case import IScoutUseCase
 from ontology.app.ports.input.scraper_use_case import IScraperUseCase
 from ontology.app.ports.output.command_interpreter_port import ICommandInterpreterPort
+from ontology.app.ports.output.scout_request_sink_port import IScoutRequestSinkPort
 
 logger = logging.getLogger(__name__)
 
@@ -27,10 +28,12 @@ class ScoutInteractor(IScoutUseCase):
         interpreter: ICommandInterpreterPort,
         crawler: ICrawlerUseCase,
         scraper: IScraperUseCase,
+        request_sink: IScoutRequestSinkPort,
     ) -> None:
         self._interpreter = interpreter
         self._crawler = crawler
         self._scraper = scraper
+        self._request_sink = request_sink
         self._handlers = {
             _CRAWLER: self._run_crawler,
             _SCRAPER: self._run_scraper,
@@ -46,6 +49,8 @@ class ScoutInteractor(IScoutUseCase):
             raise ValueError("사이트 주소(URL)를 입력해 주세요.")
 
         plan = await self._interpreter.interpret(command.mode, command.command)
+        # 입력(URL·명령)과 해석 계획을 Redis 이력에 남긴다(실행 전에 기록).
+        await self._request_sink.record(command.mode, url, command.command, plan)
         summary = await handler(url, plan)
         logger.info("[ScoutInteractor] mode=%s url=%s summary=%s", command.mode, url, summary)
         return ScoutResult(mode=command.mode, plan=plan, summary=summary)
@@ -57,13 +62,14 @@ class ScoutInteractor(IScoutUseCase):
                 max_depth=plan.max_depth,
                 seed=url,
                 keywords=plan.keywords,
+                enqueue_to_scraper=False,
             )
         )
         return {
             "seed": report.seed,
             "keywords": report.keywords,
             "pages_visited": report.pages_visited,
-            "urls_enqueued": report.urls_enqueued,
+            "findings_saved": report.findings_saved,
         }
 
     async def _run_scraper(self, url: str, plan: ScoutPlan) -> dict[str, object]:

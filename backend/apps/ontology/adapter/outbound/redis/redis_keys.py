@@ -11,3 +11,6 @@ CRAWLER_KEYWORDS = "ontology:crawler:keywords"
 
 # 크롤러 → 스크래퍼로 넘기는 URL 작업 큐 (LIST)
 SCRAPER_QUEUE = "ontology:scraper:queue"
+
+# 어드민 스카우트(크롤/스크랩) 입력 이력 — URL·자연어 명령·해석 계획 (LIST, RPUSH)
+SCOUT_REQUESTS = "ontology:scout:requests"

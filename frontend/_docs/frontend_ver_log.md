@@ -5,6 +5,7 @@
 ### Added
 - Admin 사이드바에 **"데이터 수집"** 섹션과 **"크롤러/스크래퍼"** 메뉴(`/admin/scout`, `Radar` 아이콘) 추가 (`lib/admin/admin-nav.ts`, 비전처리 섹션 아래). 페이지(`app/admin/scout/page.tsx`)는 탭 토글 콘솔(`components/admin/scout/scout-console.tsx`) — `Tabs`로 크롤러↔스크래퍼 전환, **사이트 주소(URL)·자연어 명령** 2개 입력창을 두고 실행하면 백엔드 스카우트(`POST /api/scout/run`, backend_ver_log v0.2.1)가 명령을 해석해 크롤/스크랩을 수행. 결과 패널에 AI 해석 문장·해석된 파라미터(페이지·깊이·키워드)·실행 요약(방문/적재/스크랩 수) 표시. 인증은 `adminFetch`로 admin JWT 전달.
 - BFF 프록시 `app/api/admin/scout/route.ts` 신규 — 캐치올(`app/api/admin/[...path]`)이 `/admin/*`만 백엔드 `/admin/*`로 보내므로, `/api/scout/run`으로 보내는 전용 라우트를 별도로 둠(`proxyToBackend`, 크롤 지연 대비 timeout 120s, `Authorization` 전달).
+- 결과 요약 라벨에 `findings_saved`("저장된 관련 URL") 추가 — 크롤러가 resources에 저장한 관련 URL 수 표시(backend_ver_log v0.2.2).
 
 ### Removed
 - **Admin auth 바이패스(`ADMIN_AUTH_BYPASSED` / `NEXT_PUBLIC_ADMIN_SKIP_AUTH`) 완전 제거.** "FastAPI 배포 전 임시" 셔틀이었으나 기본값이 `!== "false"`라 **환경변수 미설정 시 자동으로 로그인 우회**되는 구조였음 — Vercel처럼 `.env.local`이 안 실리는 환경에서 비밀번호 없이 대시보드 진입·로그아웃 무효·일부 API 401(무토큰 호출) 증상의 근본 원인. `lib/admin/auth.ts`, `app/admin/layout.tsx`, `app/admin/login/page.tsx`에서 관련 분기 전부 삭제 → 어드민은 항상 로그인 필수.

@@ -1,5 +1,14 @@
 # Backend Version Log
 
+## [v0.2.2] - 2026-07-16
+
+### Added
+- **스카우트 입력 이력 Redis 저장** — 어드민이 입력한 URL·자연어 명령·해석 계획을 실행 시 Redis LIST(`ontology:scout:requests`, 최근 500개 유지)에 JSON으로 기록. `IScoutRequestSinkPort` + `RedisScoutRequestSinkAdapter`(RPUSH+LTRIM) 신설, `scout_interactor`가 해석 직후(실행 전) 기록, `scout_provider`·`redis_keys`에 배선.
+- **크롤러 결과 resources 파일 저장** — 크롤러가 찾은 관련 페이지(`CrawlFinding`: url·title·matched_keywords)를 `apps/ontology/resources/crawled/crawled.jsonl`에 JSONL append. `ICrawlSinkPort` + `FileCrawlSinkAdapter` 신설, `crawler_interactor`가 항상 저장(`CrawlReport.findings_saved` 추가), `crawler_provider`에 배선. 사용자가 직접 확인·필터링 후 Redis에 적재하는 원천 파일.
+
+### Changed
+- `CrawlRequest.enqueue_to_scraper`(기본 True) 추가 — 크롤러의 스크래퍼 큐 자동 적재를 옵션화. 스카우트 경로는 `False`로 꺼서(필터링 전 Redis 유입 차단) resources 저장만 하고, 기존 `/crawler/run`은 자동 적재 유지(하위 호환). 키워드 판정은 `any_match` → `matches`(매칭 키워드까지 수집)로 대체하되 동치(빈 키워드=전체 관련).
+
 ## [v0.2.1] - 2026-07-16
 
 ### Added

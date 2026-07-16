@@ -7,8 +7,10 @@ const projectRoot = dirname(fileURLToPath(import.meta.url))
 
 /** @type {import('next').NextConfig} */
 const nextConfig = {
-  // 모노레포(com.foodopenlab) 안에서 Turbopack이 상위 폴더를 루트로 잡아
-  // node_modules/next 를 못 찾는 패닉 방지
+  // 모노레포(com.foodopenlab) 안에서 Next가 상위 폴더를 루트로 잡아
+  // node_modules/next 를 못 찾거나 파일 트레이싱 루트가 어긋나는 것을 막는다.
+  // turbopack.root 와 반드시 같은 값이어야 한다(다르면 빌드 경고).
+  outputFileTracingRoot: projectRoot,
   turbopack: {
     root: projectRoot,
   },
