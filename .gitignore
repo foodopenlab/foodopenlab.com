@@ -104,3 +104,6 @@ desktop.ini
 
 # DB 볼륨 백업 (대용량 바이너리 — git 추적 금지)
 foodopenlab_db_backup/
+
+# 온톨로지 크롤러/스크래퍼 산출물 (정제 전 raw 데이터 — 코드가 재생성)
+backend/apps/ontology/resources/scraped/

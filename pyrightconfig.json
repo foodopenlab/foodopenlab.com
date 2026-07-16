@@ -1,17 +1,17 @@
 {
-  "include": ["com.auditor"],
+  "include": ["backend"],
   "exclude": [
     ".venv",
     "watcher.www",
     "flutter",
     "node_modules",
     "**/__pycache__",
-    "com.auditor/tools",
-    "com.auditor/scratch"
+    "backend/tools",
+    "backend/scratch"
   ],
-  "pythonVersion": "3.12",
+  "pythonVersion": "3.13",
   "typeCheckingMode": "basic",
-  "venvPath": "C:/Users/hi/anaconda3/envs",
-  "venv": "pytorch_env",
-  "extraPaths": ["com.auditor/core", "com.auditor/apps"]
+  "venvPath": ".",
+  "venv": ".venv",
+  "extraPaths": ["backend/core", "backend/apps"]
 }
