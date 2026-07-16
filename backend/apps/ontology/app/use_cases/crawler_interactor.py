@@ -32,12 +32,15 @@ class CrawlerInteractor(ICrawlerUseCase):
         self._queue = queue
 
     async def crawl(self, request: CrawlRequest) -> CrawlReport:
-        seed = await self._source.next_seed()
+        seed = request.seed or await self._source.next_seed()
         if seed is None:
             logger.info("[CrawlerInteractor] 대기 중인 시드 없음")
             return CrawlReport(seed=None)
 
-        keywords = KeywordSet.of(await self._source.load_keywords())
+        raw_keywords = (
+            request.keywords if request.keywords is not None else await self._source.load_keywords()
+        )
+        keywords = KeywordSet.of(raw_keywords)
         seed_host = urlparse(seed).netloc
 
         visited: set[str] = set()

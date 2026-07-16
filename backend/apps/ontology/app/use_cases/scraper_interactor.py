@@ -34,7 +34,13 @@ class ScraperInteractor(IScraperUseCase):
         self._source = source
 
     async def scrape(self, request: ScrapeRequest) -> ScrapeReport:
-        keywords = KeywordSet.of(await self._source.load_keywords())
+        if request.url:
+            await self._queue.enqueue([request.url])
+
+        raw_keywords = (
+            request.keywords if request.keywords is not None else await self._source.load_keywords()
+        )
+        keywords = KeywordSet.of(raw_keywords)
 
         processed = 0
         scraped = 0

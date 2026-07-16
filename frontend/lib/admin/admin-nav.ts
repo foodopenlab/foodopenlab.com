@@ -11,6 +11,7 @@ import {
   Mail,
   MessageCircle,
   MessageSquare,
+  Radar,
   ScanFace,
   UserCheck,
 } from "lucide-react"
@@ -37,6 +38,7 @@ export const ADMIN_NAV_ITEMS: AdminNavItem[] = [
   { href: "/admin/braindead/inbox", label: "수신함", icon: Inbox },
   { href: "/admin/vision/images", label: "이미지 업로드", icon: ImageUp, section: "비전처리" },
   { href: "/admin/vision/recognize", label: "객체탐지", icon: ScanFace },
+  { href: "/admin/scout", label: "크롤러/스크래퍼", icon: Radar, section: "데이터 수집" },
 ]
 
 export function isAdminNavActive(pathname: string | null, href: string): boolean {

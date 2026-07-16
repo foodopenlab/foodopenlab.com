@@ -1,0 +1,45 @@
+from fastapi import APIRouter, Depends, HTTPException, status
+
+from matrix.grid_admin_guard_manager import verify_admin_jwt
+
+from ontology.adapter.inbound.api.schemas.scout_schema import (
+    ScoutPlanSchema,
+    ScoutRunRequest,
+    ScoutRunResponse,
+)
+from ontology.app.dtos.scout_dto import ScoutCommand
+from ontology.app.ports.input.scout_use_case import IScoutUseCase
+from ontology.dependencies.scout_provider import get_scout_use_case
+
+router = APIRouter(prefix="/scout", tags=["scout"])
+
+
+@router.get("/myself")
+async def introduce_myself() -> dict:
+    return {"id": 0, "name": "scout"}
+
+
+@router.post("/run", response_model=ScoutRunResponse)
+async def run(
+    body: ScoutRunRequest,
+    use_case: IScoutUseCase = Depends(get_scout_use_case),
+    _admin: str = Depends(verify_admin_jwt),
+) -> ScoutRunResponse:
+    try:
+        result = await use_case.run(
+            ScoutCommand(mode=body.mode, url=body.url, command=body.command)
+        )
+    except ValueError as exc:
+        raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail=str(exc)) from exc
+
+    return ScoutRunResponse(
+        mode=result.mode,
+        plan=ScoutPlanSchema(
+            max_pages=result.plan.max_pages,
+            max_depth=result.plan.max_depth,
+            max_items=result.plan.max_items,
+            keywords=result.plan.keywords,
+            reason=result.plan.reason,
+        ),
+        summary=result.summary,
+    )

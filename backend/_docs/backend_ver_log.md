@@ -1,5 +1,13 @@
 # Backend Version Log
 
+## [v0.2.1] - 2026-07-16
+
+### Added
+- `apps/ontology`에 **스카우트 오케스트레이터** 추가 — 어드민이 입력한 시드 URL·자연어 명령을 받아 실행하는 단일 진입점 `POST /api/scout/run`(어드민 전용, `core/matrix/grid_admin_guard_manager.verify_admin_jwt`로 보호). 프랙탈 세트: dto(`scout_dto`의 `ScoutCommand`/`ScoutPlan`/`ScoutResult`)·input port(`scout_use_case`)·interactor(`scout_interactor`, 모드 분기는 조건문 대신 dispatch table)·output port(`command_interpreter_port`)·adapter(`gemini_command_interpreter_adapter`, 게이트웨이와 동일한 `IGeminiPort`로 자연어→JSON 파라미터 해석·클램핑)·schema(`scout_schema`)·router(`scout_router`, `/myself` 배선검증 포함)·DI(`scout_provider`, `get_gemini_port`·`get_crawler_use_case`·`get_scraper_use_case` 재사용). 흐름: 명령 해석 → 모드별(crawler/scraper) 기존 use case 실행 → 계획+결과 요약 반환. LLM 파싱 실패 시 예외 대신 안전한 기본값 계획으로 폴백.
+
+### Changed
+- `crawler`/`scraper` 요청 DTO에 옵션 필드 추가 — `CrawlRequest.seed`·`CrawlRequest.keywords`, `ScrapeRequest.url`·`ScrapeRequest.keywords`. 주어지면 Redis 소스(`next_seed`/`load_keywords`) 대신 요청값을 사용(스카우트가 입력 URL을 시드/대상으로 주입하기 위함). 인터랙터는 요청값 우선, 없으면 기존 Redis 경로 유지 — 기존 `/crawler/run`·`/scraper/run` 계약은 하위 호환. 스크래퍼는 `url`이 오면 큐에 먼저 적재 후 소비.
+
 ## [v0.2.0] - 2026-07-15
 
 ### Added

@@ -5,9 +5,11 @@ from dataclasses import dataclass, field
 
 @dataclass(frozen=True)
 class ScrapeRequest:
-    """스크랩 실행 파라미터 — 처리할 최대 URL 개수."""
+    """스크랩 실행 파라미터. url이 주어지면 큐에 먼저 넣고, keywords가 주어지면 Redis 대신 그 값을 쓴다."""
 
     max_items: int = 50
+    url: str | None = None
+    keywords: list[str] | None = None
 
 
 @dataclass(frozen=True)

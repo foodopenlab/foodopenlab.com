@@ -5,10 +5,12 @@ from dataclasses import dataclass, field
 
 @dataclass(frozen=True)
 class CrawlRequest:
-    """크롤 실행 파라미터 — 시드·키워드는 Redis에서 가져오므로 여기엔 한도만 담는다."""
+    """크롤 실행 파라미터. seed·keywords가 주어지면 Redis 소스 대신 그 값을 쓴다."""
 
     max_pages: int = 20
     max_depth: int = 2
+    seed: str | None = None
+    keywords: list[str] | None = None
 
 
 @dataclass(frozen=True)
