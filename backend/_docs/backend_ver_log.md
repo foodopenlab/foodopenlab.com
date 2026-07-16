@@ -1,5 +1,10 @@
 # Backend Version Log
 
+## [v0.2.3] - 2026-07-16
+
+### Added
+- **스카우트 결과 조회 엔드포인트** `GET /api/scout/results?kind=crawled|scraped&limit=200`(어드민 전용, `verify_admin_jwt`) — resources JSONL(`crawled.jsonl`/`scraped.jsonl`)을 읽어 최신순 행으로 반환. 프랙탈 세트: dto(`ScoutResultsView`)·input port(`scout_results_use_case`)·interactor(`scout_results_interactor`, kind 화이트리스트 검증·limit 1~1000 클램프)·output port(`scout_result_reader_port`)·adapter(`file_scout_result_reader_adapter`, JSONL 파싱·역순)·schema(`ScoutResultsResponse`)·router 엔드포인트·DI(`scout_provider`). 잘못된 kind는 400.
+
 ## [v0.2.2] - 2026-07-16
 
 ### Added

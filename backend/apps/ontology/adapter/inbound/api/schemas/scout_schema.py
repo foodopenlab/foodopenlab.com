@@ -29,3 +29,9 @@ class ScoutRunResponse(BaseModel):
     mode: str = Field(..., description="실행 모드")
     plan: ScoutPlanSchema = Field(..., description="자연어 해석 결과 실행 계획")
     summary: dict = Field(..., description="실행 결과 요약(모드별 키)")
+
+
+class ScoutResultsResponse(BaseModel):
+    kind: str = Field(..., description="결과 종류(crawled|scraped)")
+    count: int = Field(..., description="반환된 행 수")
+    items: list[dict] = Field(..., description="최신순 결과 행")

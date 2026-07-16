@@ -30,3 +30,11 @@ class ScoutResult:
     mode: str
     plan: ScoutPlan
     summary: dict[str, object]
+
+
+@dataclass(frozen=True)
+class ScoutResultsView:
+    """resources에 저장된 크롤/스크랩 결과 조회 — 최신순 행 목록."""
+
+    kind: str
+    items: list[dict]

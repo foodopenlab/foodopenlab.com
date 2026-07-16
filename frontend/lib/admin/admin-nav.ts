@@ -3,6 +3,7 @@ import {
   BarChart2,
   BookUser,
   Cpu,
+  Database,
   FileText,
   GraduationCap,
   ImageUp,
@@ -39,6 +40,7 @@ export const ADMIN_NAV_ITEMS: AdminNavItem[] = [
   { href: "/admin/vision/images", label: "이미지 업로드", icon: ImageUp, section: "비전처리" },
   { href: "/admin/vision/recognize", label: "객체탐지", icon: ScanFace },
   { href: "/admin/scout", label: "크롤러/스크래퍼", icon: Radar, section: "데이터 수집" },
+  { href: "/admin/scout/results", label: "수집 결과", icon: Database },
 ]
 
 export function isAdminNavActive(pathname: string | null, href: string): boolean {

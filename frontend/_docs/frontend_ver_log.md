@@ -1,9 +1,15 @@
 # Frontend Version Log
 
+## [v0.1.11] - 2026-07-16
+
+### Added
+- Admin 사이드바 "크롤러/스크래퍼" **아래**에 **"수집 결과"** 메뉴(`/admin/scout/results`, `Database` 아이콘) 추가 (`lib/admin/admin-nav.ts`, 같은 "데이터 수집" 섹션). 페이지(`app/admin/scout/results/page.tsx`)는 탭 콘솔(`components/admin/scout/scout-results.tsx`) — `Tabs`로 크롤러/스크래퍼 전환, resources에 저장된 결과(`GET /api/scout/results`, backend_ver_log v0.2.3)를 테이블로 표시(크롤러: 저장시각·URL·제목·매칭키워드 / 스크래퍼: +길이·스니펫). 최신순, 새로고침 버튼, URL 새 탭 링크, `saved_at` unix초→로컬시간 포맷. 인증은 `adminFetch`.
+- BFF 프록시 `app/api/admin/scout/results/route.ts` 신규 — 캐치올보다 우선하는 전용 GET 라우트로 `/api/scout/results`에 프록시(`proxyToBackend`가 `?kind=&limit=` 쿼리 자동 전달).
+
 ## [v0.1.10] - 2026-07-16
 
 ### Fixed
-- **Vercel 빌드 실패(`ENOENT ... .next/routes-manifest-deterministic.json`) 해결** — Root Directory=`frontend`인 Vercel은 모노레포 루트 기준으로 파일 트레이싱을 하는데, "Both outputFileTracingRoot and turbopack.root are set" 경고를 없애려 `next.config.mjs`에 `outputFileTracingRoot: projectRoot`(=frontend)를 강제한 것이 원인이었음 — Vercel의 `onBuildComplete`가 `.next` 매니페스트를 레포 루트에서 찾다가 못 찾아 실패. Turbopack/webpack 무관하게 재현됨(빌드 도구 문제가 아니라 트레이싱 루트 문제). 해결: 해당 라인 제거 + 빌드 스크립트를 `next build`로 원복(직전 성공 커밋 `admin개선`과 동일 설정). 그 경고는 무해하며 성공 빌드에도 있었음.
+- **Vercel 빌드 실패(`ENOENT ... .next/routes-manifest-deterministic.json`) 해결** — Root Directory=`frontend`인 Vercel은 모노레포 루트 기준으로 파일 트레이싱을 하는데, "Both outputFileTracingRoot and turbopack.root are set" 경고를 없애려 `next.config.mjs`에 `outputFileTracingRoot: projectRoot`(=frontend)를 강제한 것이 원인이었음 — Vercel의 `onBuildComplete`가 `.next` 매니페스트를 레포 루트에서 찾다가 못 찾아 실패. Turbopack/webpack 무관하게 재현됨(빌드 도구 문제가 아니라 트레이싱 루트 문제). 해결: 해당 라인 제거 + 빌드 스크립트를 `next build`로 원복(직전 성공 커밋 `admin개선`과 동일 설정). 그 경고는 무해하며 성공 빌드에도 있었음. → 커밋 `0c62155`에서 Vercel 프로덕션 빌드 통과 확인.
 
 ### Added
 - Admin 사이드바에 **"데이터 수집"** 섹션과 **"크롤러/스크래퍼"** 메뉴(`/admin/scout`, `Radar` 아이콘) 추가 (`lib/admin/admin-nav.ts`, 비전처리 섹션 아래). 페이지(`app/admin/scout/page.tsx`)는 탭 토글 콘솔(`components/admin/scout/scout-console.tsx`) — `Tabs`로 크롤러↔스크래퍼 전환, **사이트 주소(URL)·자연어 명령** 2개 입력창을 두고 실행하면 백엔드 스카우트(`POST /api/scout/run`, backend_ver_log v0.2.1)가 명령을 해석해 크롤/스크랩을 수행. 결과 패널에 AI 해석 문장·해석된 파라미터(페이지·깊이·키워드)·실행 요약(방문/적재/스크랩 수) 표시. 인증은 `adminFetch`로 admin JWT 전달.
