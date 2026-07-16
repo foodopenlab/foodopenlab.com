@@ -1,5 +1,13 @@
 # Frontend Version Log
 
+## [v0.1.9] - 2026-07-16
+
+### Removed
+- **Admin auth 바이패스(`ADMIN_AUTH_BYPASSED` / `NEXT_PUBLIC_ADMIN_SKIP_AUTH`) 완전 제거.** "FastAPI 배포 전 임시" 셔틀이었으나 기본값이 `!== "false"`라 **환경변수 미설정 시 자동으로 로그인 우회**되는 구조였음 — Vercel처럼 `.env.local`이 안 실리는 환경에서 비밀번호 없이 대시보드 진입·로그아웃 무효·일부 API 401(무토큰 호출) 증상의 근본 원인. `lib/admin/auth.ts`, `app/admin/layout.tsx`, `app/admin/login/page.tsx`에서 관련 분기 전부 삭제 → 어드민은 항상 로그인 필수.
+
+### Changed
+- Admin 진입 게이트가 토큰 **존재 여부만** 확인해, 만료·형식오류(stale) 토큰을 들고 있으면 `/admin/dashboard`가 401만 반복하고 로그인 화면으로 못 튕기던 문제 개선. `lib/admin/auth.ts`에 `isAdminTokenValid()` 추가(형식·`role==="admin"`·`exp` 만료 검사, 요청 중 만료 회피용 10초 여유) 후 `isAdminLoggedIn()`이 이를 사용. `decodeAdminJwtPayload` 반환 타입에 `exp` 포함. `app/admin/layout.tsx` 진입 시 토큰이 무효면 `removeAdminSession()`으로 stale 세션 정리 후 `/admin/login`으로 이동. 서명 검증은 여전히 백엔드(`admin_auth_middleware.verify_admin_token`) 소관.
+
 ## [v0.1.8] - 2026-07-15
 
 ### Changed

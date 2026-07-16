@@ -1,9 +1,6 @@
 const ADMIN_TOKEN_KEY = "admin_token"
 const ADMIN_NAME_KEY = "admin_display_name"
 
-/** FastAPI 배포 전 임시. false로 두면 로그인 필수 (NEXT_PUBLIC_ADMIN_SKIP_AUTH=false). */
-export const ADMIN_AUTH_BYPASSED = process.env.NEXT_PUBLIC_ADMIN_SKIP_AUTH !== "false"
-
 export function getAdminToken(): string | null {
   if (typeof window === "undefined") return null
   return localStorage.getItem(ADMIN_TOKEN_KEY)
@@ -34,13 +31,25 @@ export function removeAdminSession(): void {
   removeAdminDisplayName()
 }
 
+/** 서명 검증은 백엔드 몫. 진입 시점에서 형식·role·만료(exp)만 걸러 stale 토큰을 차단한다. */
+export function isAdminTokenValid(): boolean {
+  const token = getAdminToken()
+  if (!token) return false
+  const payload = decodeAdminJwtPayload(token)
+  if (!payload || payload.role !== "admin") return false
+  if (typeof payload.exp !== "number") return false
+  // exp(초) 기준 만료 여부. 요청 중 만료를 피하려 10초 여유를 둔다.
+  return payload.exp * 1000 > Date.now() + 10_000
+}
+
 export function isAdminLoggedIn(): boolean {
-  if (ADMIN_AUTH_BYPASSED) return true
-  return getAdminToken() !== null
+  return isAdminTokenValid()
 }
 
 /** JWT payload (검증 없이 표시용). */
-export function decodeAdminJwtPayload(token: string): { sub?: string; email?: string; role?: string } | null {
+export function decodeAdminJwtPayload(
+  token: string,
+): { sub?: string; email?: string; role?: string; exp?: number } | null {
   try {
     const part = token.split(".")[1]
     if (!part) return null
@@ -51,14 +60,13 @@ export function decodeAdminJwtPayload(token: string): { sub?: string; email?: st
         .map((c) => "%" + ("00" + c.charCodeAt(0).toString(16)).slice(-2))
         .join(""),
     )
-    return JSON.parse(json) as { sub?: string; email?: string; role?: string }
+    return JSON.parse(json) as { sub?: string; email?: string; role?: string; exp?: number }
   } catch {
     return null
   }
 }
 
 export function getAdminDisplayName(): string {
-  if (ADMIN_AUTH_BYPASSED) return "관리자 (로그인 보류)"
   if (typeof window === "undefined") return "Admin"
   const stored = localStorage.getItem(ADMIN_NAME_KEY)
   if (stored) return stored
@@ -73,7 +81,7 @@ export async function adminFetch(path: string, options?: RequestInit): Promise<R
     throw new Error("adminFetch는 클라이언트에서만 사용할 수 있습니다.")
   }
   const token = getAdminToken()
-  if (!ADMIN_AUTH_BYPASSED && !token) {
+  if (!token) {
     window.location.href = "/admin/login"
     throw new Error("로그인이 필요합니다.")
   }
@@ -88,7 +96,7 @@ export async function adminFetch(path: string, options?: RequestInit): Promise<R
     ...options,
     headers,
   })
-  if (!ADMIN_AUTH_BYPASSED && res.status === 401) {
+  if (res.status === 401) {
     removeAdminSession()
     window.location.href = "/admin/login"
     throw new Error("인증이 만료되었습니다.")

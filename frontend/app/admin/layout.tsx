@@ -2,7 +2,7 @@
 
 import { useEffect, useState } from "react"
 import { usePathname, useRouter } from "next/navigation"
-import { ADMIN_AUTH_BYPASSED, isAdminLoggedIn } from "@/lib/admin/auth"
+import { isAdminLoggedIn, removeAdminSession } from "@/lib/admin/auth"
 import { AdminSidebar, AdminMobileNav } from "@/components/admin/admin-sidebar"
 import { AdminHeader } from "@/components/admin/admin-header"
 import { Drawer, DrawerContent } from "@/components/ui/drawer"
@@ -16,14 +16,11 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
 
   useEffect(() => {
     if (pathname === "/admin/login") {
-      if (ADMIN_AUTH_BYPASSED) {
-        router.replace("/admin")
-        return
-      }
       setGate("login")
       return
     }
     if (!isAdminLoggedIn()) {
+      removeAdminSession()
       router.replace("/admin/login")
       setGate("wait")
       return

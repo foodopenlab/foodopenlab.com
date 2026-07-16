@@ -7,7 +7,7 @@ import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
 import { Spinner } from "@/components/ui/spinner"
-import { ADMIN_AUTH_BYPASSED, isAdminLoggedIn, setAdminDisplayName, setAdminToken } from "@/lib/admin/auth"
+import { isAdminLoggedIn, setAdminDisplayName, setAdminToken } from "@/lib/admin/auth"
 
 export default function AdminLoginPage() {
   const router = useRouter()
@@ -18,7 +18,7 @@ export default function AdminLoginPage() {
   const [error, setError] = useState<string | null>(null)
 
   useEffect(() => {
-    if (ADMIN_AUTH_BYPASSED || isAdminLoggedIn()) router.replace("/admin")
+    if (isAdminLoggedIn()) router.replace("/admin")
   }, [router])
 
   const submit = async () => {
