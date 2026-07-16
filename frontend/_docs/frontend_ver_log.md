@@ -2,6 +2,9 @@
 
 ## [v0.1.10] - 2026-07-16
 
+### Fixed
+- **Vercel 빌드 실패 해결** — `next.config.mjs`에 `outputFileTracingRoot`(=`turbopack.root`=projectRoot) 추가로 "Both outputFileTracingRoot and turbopack.root are set, but they must have the same value" 경고 제거. 이어 빌드 스크립트를 `next build` → `next build --webpack`로 변경(`dev`는 이미 `--webpack`) — Next 16 기본 Turbopack 빌드가 만드는 `routes-manifest-deterministic.json`을 Vercel 빌더가 못 찾아 `ENOENT ... lstat '.next/routes-manifest-deterministic.json'`로 실패하던 것을, 웹팩 빌드(표준 `routes-manifest.json` 생성)로 전환해 해결. 로컬 프로덕션 빌드 exit=0·44/44 페이지 생성 확인.
+
 ### Added
 - Admin 사이드바에 **"데이터 수집"** 섹션과 **"크롤러/스크래퍼"** 메뉴(`/admin/scout`, `Radar` 아이콘) 추가 (`lib/admin/admin-nav.ts`, 비전처리 섹션 아래). 페이지(`app/admin/scout/page.tsx`)는 탭 토글 콘솔(`components/admin/scout/scout-console.tsx`) — `Tabs`로 크롤러↔스크래퍼 전환, **사이트 주소(URL)·자연어 명령** 2개 입력창을 두고 실행하면 백엔드 스카우트(`POST /api/scout/run`, backend_ver_log v0.2.1)가 명령을 해석해 크롤/스크랩을 수행. 결과 패널에 AI 해석 문장·해석된 파라미터(페이지·깊이·키워드)·실행 요약(방문/적재/스크랩 수) 표시. 인증은 `adminFetch`로 admin JWT 전달.
 - BFF 프록시 `app/api/admin/scout/route.ts` 신규 — 캐치올(`app/api/admin/[...path]`)이 `/admin/*`만 백엔드 `/admin/*`로 보내므로, `/api/scout/run`으로 보내는 전용 라우트를 별도로 둠(`proxyToBackend`, 크롤 지연 대비 timeout 120s, `Authorization` 전달).
