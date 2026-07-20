@@ -2,6 +2,7 @@
 
 from __future__ import annotations
 
+import os
 from typing import cast
 
 import pytest
@@ -18,7 +19,7 @@ _kiwi = Kiwi()
 _DEFAULT_QUESTION = (
     "자연어처리는 넘흐 재밌어요. 올라마와 키위 라이브러리의 장점을 짧게 요약해줘."
 )
-_OLLAMA_MODEL = "exaone3.5:2.4b"
+_OLLAMA_MODEL = os.getenv("EXAONE_MODEL", "exaone3.5:7.8b")
 
 
 def run_korean_ai(user_text: str) -> str:

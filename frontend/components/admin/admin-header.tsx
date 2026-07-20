@@ -10,7 +10,7 @@ import { ThemeToggle } from "@/components/theme/theme-toggle"
 const titles: { prefix: string; title: string }[] = [
   { prefix: "/admin/siliconvalley", title: "실리콘밸리" },
   { prefix: "/admin/logs", title: "통합 로그" },
-  { prefix: "/admin/whitelist", title: "화이트리스트" },
+  { prefix: "/admin/members", title: "회원 관리" },
   { prefix: "/admin/api-stats", title: "API 통계" },
   { prefix: "/admin/ai-settings", title: "AI 설정" },
   { prefix: "/admin/chat-logs", title: "채팅 로그" },

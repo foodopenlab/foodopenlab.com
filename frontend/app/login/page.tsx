@@ -1,8 +1,9 @@
 "use client"
 
-import { useState } from "react"
+import { useEffect, useState } from "react"
 import Link from "next/link"
 import { useRouter } from "next/navigation"
+import { socialLoginUrl } from "@/lib/oauth-url"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
@@ -10,6 +11,7 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/com
 import { Spinner } from "@/components/ui/spinner"
 import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert"
 import { Shield, Lock, ArrowLeft, Check } from "lucide-react"
+import { KakaoIcon, NaverIcon } from "@/components/icons/social-icons"
 
 function GoogleIcon({ className }: { className?: string }) {
   return (
@@ -37,31 +39,32 @@ function GoogleIcon({ className }: { className?: string }) {
 export default function LoginPage() {
   const router = useRouter()
   const [isGoogleLoading, setIsGoogleLoading] = useState(false)
+  const [isKakaoLoading, setIsKakaoLoading] = useState(false)
+  const [isNaverLoading, setIsNaverLoading] = useState(false)
   const [loginError, setLoginError] = useState<string | null>(null)
 
   const [isEmailLoading, setIsEmailLoading] = useState(false)
 
-  const handleGoogleSignIn = async () => {
-    setLoginError(null)
+  // 소셜 로그인 콜백 실패(백엔드가 /login?oauth_error=1 로 되돌림) 시 안내.
+  useEffect(() => {
+    if (new URLSearchParams(window.location.search).get("oauth_error")) {
+      setLoginError("소셜 로그인에 실패했습니다. 다시 시도해 주세요.")
+      window.history.replaceState(null, "", "/login")
+    }
+  }, [])
+
+  // 소셜 로그인 — 백엔드 OAuth 시작 URL로 top-level 이동(Authorization Code 플로우).
+  const handleGoogleSignIn = () => {
     setIsGoogleLoading(true)
-    await new Promise((resolve) => setTimeout(resolve, 1200))
-    setIsGoogleLoading(false)
-    
-    // Generate a mock JWT token so it remains functional
-    const header = btoa(JSON.stringify({ alg: "HS256", typ: "JWT" }))
-    const payload = btoa(JSON.stringify({
-      sub: "9999",
-      email: "google-user@example.com",
-      name: "구글 사용자",
-      role: "user",
-      exp: Math.floor(Date.now() / 1000) + 7200
-    }))
-    const signature = "mock_signature"
-    const mockToken = `${header}.${payload}.${signature}`
-    
-    localStorage.setItem("access_token", mockToken)
-    window.dispatchEvent(new Event("auth-state-change"))
-    router.push("/mypage")
+    window.location.href = socialLoginUrl("google")
+  }
+  const handleKakaoSignIn = () => {
+    setIsKakaoLoading(true)
+    window.location.href = socialLoginUrl("kakao")
+  }
+  const handleNaverSignIn = () => {
+    setIsNaverLoading(true)
+    window.location.href = socialLoginUrl("naver")
   }
 
   const handleEmailSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
@@ -142,11 +145,11 @@ export default function LoginPage() {
               </div>
               <span className="text-2xl font-bold text-foreground">HACCP Monitor AI</span>
             </div>
-            <p className="mb-10 text-xl text-muted-foreground">Google 계정으로 빠르게 로그인하세요</p>
+            <p className="mb-10 text-xl text-muted-foreground">소셜 계정으로 빠르게 로그인하세요</p>
             <div className="space-y-4">
               <div className="flex items-center gap-3 text-sm text-muted-foreground">
                 <Check className="size-4 shrink-0 text-primary" aria-hidden />
-                <span>OAuth 2.0 보안 연동 (Google)</span>
+                <span>OAuth 2.0 보안 연동 (카카오·네이버·Google)</span>
               </div>
               <div className="flex items-center gap-3 text-sm text-muted-foreground">
                 <Check className="size-4 shrink-0 text-primary" aria-hidden />
@@ -176,23 +179,55 @@ export default function LoginPage() {
             <Card className="border-border bg-card">
               <CardHeader className="text-center">
                 <CardTitle className="text-2xl text-foreground">로그인</CardTitle>
-                <CardDescription>Google 계정 또는 이메일 계정으로 로그인하세요.</CardDescription>
+                <CardDescription>소셜 계정 또는 이메일 계정으로 로그인하세요.</CardDescription>
               </CardHeader>
               <CardContent className="space-y-6">
-                <Button
-                  type="button"
-                  variant="outline"
-                  className="h-12 w-full border-border bg-white text-gray-800 transition-all duration-200 hover:bg-gray-50 hover:shadow-md"
-                  onClick={handleGoogleSignIn}
-                  disabled={isGoogleLoading}
-                >
-                  {isGoogleLoading ? (
-                    <Spinner className="mr-2 h-5 w-5" />
-                  ) : (
-                    <GoogleIcon className="mr-3 h-5 w-5" />
-                  )}
-                  {isGoogleLoading ? "Google에 연결 중..." : "Google 계정으로 로그인"}
-                </Button>
+                <div className="space-y-3">
+                  <Button
+                    type="button"
+                    variant="outline"
+                    className="h-12 w-full border-transparent bg-[#FEE500] text-[#191919] transition-all duration-200 hover:bg-[#FDD835] hover:shadow-md"
+                    onClick={handleKakaoSignIn}
+                    disabled={isKakaoLoading}
+                  >
+                    {isKakaoLoading ? (
+                      <Spinner className="mr-2 h-5 w-5" />
+                    ) : (
+                      <KakaoIcon className="mr-3 h-5 w-5" />
+                    )}
+                    {isKakaoLoading ? "카카오에 연결 중..." : "카카오로 로그인"}
+                  </Button>
+
+                  <Button
+                    type="button"
+                    variant="outline"
+                    className="h-12 w-full border-transparent bg-[#03C75A] text-white transition-all duration-200 hover:bg-[#02b350] hover:shadow-md"
+                    onClick={handleNaverSignIn}
+                    disabled={isNaverLoading}
+                  >
+                    {isNaverLoading ? (
+                      <Spinner className="mr-2 h-5 w-5" />
+                    ) : (
+                      <NaverIcon className="mr-3 h-5 w-5" />
+                    )}
+                    {isNaverLoading ? "네이버에 연결 중..." : "네이버로 로그인"}
+                  </Button>
+
+                  <Button
+                    type="button"
+                    variant="outline"
+                    className="h-12 w-full border-border bg-white text-gray-800 transition-all duration-200 hover:bg-gray-50 hover:shadow-md"
+                    onClick={handleGoogleSignIn}
+                    disabled={isGoogleLoading}
+                  >
+                    {isGoogleLoading ? (
+                      <Spinner className="mr-2 h-5 w-5" />
+                    ) : (
+                      <GoogleIcon className="mr-3 h-5 w-5" />
+                    )}
+                    {isGoogleLoading ? "Google에 연결 중..." : "Google 계정으로 로그인"}
+                  </Button>
+                </div>
 
                 <div className="relative">
                   <div className="absolute inset-0 flex items-center">

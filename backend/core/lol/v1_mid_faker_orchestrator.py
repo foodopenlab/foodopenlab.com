@@ -2,39 +2,28 @@ from __future__ import annotations
 
 import asyncio
 import logging
-import os
+
+from matrix.grid_exaone_llm_manager import LLM_MODEL, chat_sync
 
 logger = logging.getLogger(__name__)
 
-_DEFAULT_MODEL = "exaone3.5:2.4b"
 _DEFAULT_SYSTEM = "당신은 유능한 AI 오케스트레이터입니다. 짧고 명확한 한국어로 답하세요."
 
 
 class FakerOrchestrator:
-    """exaone3.5:2.4b 기반 mid-lane 오케스트레이터."""
+    """EXAONE 기반 mid-lane 오케스트레이터."""
 
-    def __init__(
-        self,
-        model: str | None = None,
-        system_prompt: str | None = None,
-    ) -> None:
-        self.model = model or os.getenv("OLLAMA_MODEL_LOL", _DEFAULT_MODEL)
+    def __init__(self, system_prompt: str | None = None) -> None:
+        self.model = LLM_MODEL  # 로깅용
         self.system_prompt = system_prompt or _DEFAULT_SYSTEM
 
     def _chat_sync(self, message: str, system: str | None = None) -> str:
-        import ollama
-
-        response = ollama.chat(
-            model=self.model,
-            messages=[
+        return chat_sync(
+            [
                 {"role": "system", "content": system or self.system_prompt},
                 {"role": "user", "content": message},
-            ],
-        )
-        content = response.message.content
-        if not content or not content.strip():
-            return "응답을 생성하지 못했습니다."
-        return content.strip()
+            ]
+        ) or "응답을 생성하지 못했습니다."
 
     async def chat(self, message: str, system: str | None = None) -> str:
         """Ollama blocking I/O → thread pool."""

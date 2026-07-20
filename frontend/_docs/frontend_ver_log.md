@@ -1,5 +1,45 @@
 # Frontend Version Log
 
+## [v0.1.15] - 2026-07-20
+
+### Removed
+- **구 화이트리스트 관리 페이지 정리** — 회원 관리(`/admin/members`)로 기능이 대체되어 중복된 `app/admin/whitelist/page.tsx` 삭제. 관련 참조도 전부 제거: 사이드바 nav 항목(`lib/admin/admin-nav.ts`, 미사용 `UserCheck` import 포함), 헤더 타이틀 매핑(`components/admin/admin-header.tsx`), 대시보드 퀵링크(`app/admin/page.tsx`)를 각각 **회원 관리(`/admin/members`)**로 교체·정리.
+
+### Notes
+- 검증: 재컴파일 후 `/admin/members` **200**, `/admin/whitelist` **404**.
+
+## [v0.1.14] - 2026-07-20
+
+### Added
+- **어드민 회원 관리 페이지** `app/admin/members/page.tsx` — 가입 회원 목록(이메일·이름·가입경로·상태[전문가/일반]·가입일·마지막로그인)을 표로 보여주고, 행별 **전문가 승격 / 승격 해제** 토글(`POST /admin/members/{email}/promote|demote`). 사이드바에 "회원 관리" 항목 추가(`lib/admin/admin-nav.ts`, `Users` 아이콘, 화이트리스트 위).
+
+### Changed
+- 회원가입 후 리다이렉트를 역할에 따라 분기 — 전문가로 승격된 계정만 `/mypage/industry`(업종 온보딩), 신규 일반회원은 `/mypage`로(`app/signup/page.tsx`). 화이트리스트 개편으로 신규 가입자는 일반회원이므로 전문가 전용 페이지에서 튕기는 문제 방지.
+- 이용약관 제3조를 새 가입 흐름에 맞게 개정 — "화이트리스트 이메일만 전문가 가입" → "누구나 일반회원 가입, 운영자 승인으로 전문가 승격"(`app/terms/page.tsx`).
+
+## [v0.1.13] - 2026-07-20
+
+### Added
+- **소셜 로그인 실제 OAuth 연동** — 카카오·네이버·Google 버튼을 목(mock)에서 **백엔드 OAuth 시작 URL로 top-level 이동**으로 교체(`app/login/page.tsx`·`app/signup/page.tsx`). `lib/oauth-url.ts`의 `socialLoginUrl(provider)`가 `${NEXT_PUBLIC_API_URL}/auth/{provider}/login` 생성(Next 프록시 우회 — 302 체인 정상화).
+- **OAuth 콜백 페이지** `app/auth/callback/page.tsx` — 백엔드가 fragment(`#access_token=…&refresh_token=…`)로 넘긴 토큰을 localStorage에 저장(주소창에서 즉시 제거), `auth-state-change` 전파 후 `/mypage`로 이동. 토큰 없으면 `/login?oauth_error=1`로.
+- login 페이지에 `oauth_error` 쿼리 감지 → 실패 안내 문구 표시.
+
+### Removed
+- 기존 소셜 버튼의 목(mock) 핸들러(`startMockSocialSignIn` 가짜 JWT 발급, signup no-op) 제거 — 실제 백엔드 OAuth로 대체.
+
+## [v0.1.12] - 2026-07-20
+
+### Added
+- **소셜 로그인 카카오·네이버 버튼** 추가 (`app/login/page.tsx`·`app/signup/page.tsx`) — 스크린샷 레퍼런스대로 카카오(노랑 `#FEE500`·검정 말풍선 아이콘)·네이버(초록 `#03C75A`·흰 N 아이콘)·Google 순서로 배치. 세 버튼을 `<div className="space-y-3">`로 묶고 기존 Google 버튼 스타일(`h-12 w-full`·outline·hover shadow)을 그대로 미러링.
+- 공유 아이콘 컴포넌트 `components/icons/social-icons.tsx`(`KakaoIcon`·`NaverIcon`, `currentColor` 단색 SVG) 신규 — 두 페이지에서 재사용.
+
+### Changed
+- login 페이지의 "Google 전용" 문구를 소셜 일반 문구로 정정(좌측 패널 부제·OAuth 배지·카드 설명).
+- 로그인 소셜 목(mock) 핸들러를 `startMockSocialSignIn(setLoading, profile)` 헬퍼로 통합(Google·카카오·네이버 공용). provider별 가짜 JWT 발급 후 `/mypage` 이동. **실제 OAuth는 미연동**(백엔드 소셜 엔드포인트 부재) — 기존 Google 목과 동일한 데모 동작.
+
+### Fixed
+- 기존 Google 목 핸들러가 한글 이름(`구글 사용자`)을 `btoa`에 직접 넣어 비 Latin1 문자에서 예외가 나던 잠재 버그를, 헬퍼의 UTF-8 안전 base64 인코딩(`TextEncoder`)으로 해소 — 세 소셜 버튼 모두 정상 동작.
+
 ## [v0.1.11] - 2026-07-16
 
 ### Added

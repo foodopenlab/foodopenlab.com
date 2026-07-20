@@ -1,11 +1,11 @@
 import asyncio
 import logging
-import os
 import secrets
 
 from langchain_core.messages import AIMessage, HumanMessage, SystemMessage
 from langchain_ollama import ChatOllama
 
+from matrix.grid_exaone_llm_manager import LLM_MODEL, OLLAMA_HOST
 from mfds_user.app.dtos.law_chunk_dto import LawChunkHit
 from mfds_user.app.dtos.regulation_chat_dto import (
     LawReference,
@@ -46,8 +46,8 @@ class RegulationChatInteractor:
         self._law_mcp = law_mcp
         self._law_search = law_search
         self._llm = ChatOllama(
-            model=os.getenv("EXAONE_MODEL", "exaone3.5:2.4b"),
-            base_url=os.getenv("OLLAMA_HOST", "http://host.docker.internal:11434"),
+            model=LLM_MODEL,
+            base_url=OLLAMA_HOST,
             temperature=0.3,
         )
 

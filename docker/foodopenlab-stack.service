@@ -1,0 +1,17 @@
+[Unit]
+Description=com.foodopenlab docker compose stack (backend/frontend/db + cloudflared)
+Requires=docker.service
+After=docker.service network-online.target
+Wants=network-online.target
+
+[Service]
+Type=oneshot
+RemainAfterExit=yes
+WorkingDirectory=/home/kcs88/projects/com.foodopenlab
+ExecStart=/usr/bin/docker compose -f docker-compose.yaml up -d
+ExecStop=/usr/bin/docker compose -f docker-compose.yaml stop
+# Give the daemon a moment if it is still coming up after a cold WSL boot
+ExecStartPre=/bin/sh -c 'for i in $(seq 1 30); do /usr/bin/docker info >/dev/null 2>&1 && exit 0; sleep 2; done; exit 1'
+
+[Install]
+WantedBy=multi-user.target

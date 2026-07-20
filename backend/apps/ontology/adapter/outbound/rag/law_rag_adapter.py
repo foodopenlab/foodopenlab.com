@@ -2,12 +2,11 @@ from __future__ import annotations
 
 import asyncio
 import logging
-import os
 
-import ollama
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from matrix.grid_embedding_manager import embed_text
+from matrix.grid_exaone_llm_manager import LLM_MODEL, chat_sync
 from mfds_user.adapter.outbound.pg.law_chunk_pg_repository import LawChunkPgRepository
 from mfds_user.domain.entities.law_chunk_entity import LawChunk
 
@@ -15,8 +14,6 @@ from ontology.app.ports.output.rag_port import IRagPort
 
 logger = logging.getLogger(__name__)
 
-_MODEL = os.getenv("EXAONE_MODEL", "exaone3.5:2.4b")
-_HOST = os.getenv("OLLAMA_HOST", "http://host.docker.internal:11434")
 _TOP_K = 6
 _LAW_SOURCE_TYPES = ("law", "admrul")  # 법률·시행령·시행규칙 + 고시·행정규칙
 _NO_CONTEXT = "관련 법령 조문을 찾지 못했습니다. law.go.kr에서 직접 확인을 권장합니다."
@@ -31,8 +28,7 @@ class LawRagAdapter(IRagPort):
 
     def __init__(self, session: AsyncSession) -> None:
         self._repo = LawChunkPgRepository(session)
-        self._client = ollama.Client(host=_HOST)
-        self._model = _MODEL
+        self._model = LLM_MODEL  # 로깅용
 
     async def answer(self, question: str, entities: list[str]) -> str:
         embedding = await embed_text(question)
@@ -48,15 +44,13 @@ class LawRagAdapter(IRagPort):
             return "일시적으로 답변을 생성할 수 없습니다. 잠시 후 다시 시도해 주세요."
 
     def _generate(self, question: str, context: str) -> str:
-        response = self._client.chat(
-            model=self._model,
-            messages=[
+        return chat_sync(
+            [
                 {"role": "system", "content": _system_prompt(context)},
                 {"role": "user", "content": question},
             ],
             options={"temperature": 0.3},
-        )
-        return (response.message.content or "").strip() or _NO_CONTEXT
+        ) or _NO_CONTEXT
 
 
 def _format_context(hits: list[LawChunk]) -> str:

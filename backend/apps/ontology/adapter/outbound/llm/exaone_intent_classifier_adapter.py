@@ -3,17 +3,13 @@ from __future__ import annotations
 import asyncio
 import json
 import logging
-import os
 
-import ollama
+from matrix.grid_exaone_llm_manager import LLM_MODEL, chat_sync
 
 from ontology.app.dtos.gateway_dto import Destination, Intent
 from ontology.app.ports.output.intent_classifier_port import IIntentClassifierPort
 
 logger = logging.getLogger(__name__)
-
-_MODEL = os.getenv("EXAONE_MODEL", "exaone3.5:2.4b")
-_HOST = os.getenv("OLLAMA_HOST", "http://host.docker.internal:11434")
 
 _SYSTEM_PROMPT = """너는 입력된 질문의 의도를 분류하는 비서다.
 아래 JSON 스키마로만 응답하라. 설명·인사·코드블록 없이 JSON 객체 하나만 출력한다.
@@ -42,8 +38,7 @@ class ExaoneIntentClassifierAdapter(IIntentClassifierPort):
     """로컬 Ollama EXAONE로 질문을 JSON 분류한다."""
 
     def __init__(self) -> None:
-        self._client = ollama.Client(host=_HOST)
-        self._model = _MODEL
+        self._model = LLM_MODEL  # 로깅용
 
     async def classify(self, question: str) -> Intent:
         try:
@@ -56,13 +51,11 @@ class ExaoneIntentClassifierAdapter(IIntentClassifierPort):
             return Intent(destination=Destination.GENERAL, entities=[])
 
     def _chat(self, question: str) -> str:
-        response = self._client.chat(
-            model=self._model,
-            messages=[
+        return chat_sync(
+            [
                 {"role": "system", "content": _SYSTEM_PROMPT},
                 {"role": "user", "content": question},
             ],
             format="json",
             options={"temperature": 0},
-        )
-        return response.message.content or "{}"
+        ) or "{}"

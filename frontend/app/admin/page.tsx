@@ -143,7 +143,7 @@ export default function AdminDashboardPage() {
 
   const quickLinks = [
     { href: "/admin/logs", label: "통합 로그 모니터링", status: "사용 중" },
-    { href: "/admin/whitelist", label: "전문가 화이트리스트", status: "사용 중" },
+    { href: "/admin/members", label: "회원 관리 · 전문가 승격", status: "사용 중" },
     { href: "/admin/api-stats", label: "상세 API 통계", status: "사용 중" },
     { href: "/admin/siliconvalley", label: "실리콘밸리 대시보드", status: "신규" },
   ]

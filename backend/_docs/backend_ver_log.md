@@ -1,5 +1,77 @@
 # Backend Version Log
 
+## [v0.2.9] - 2026-07-20
+
+### Removed
+- **고아가 된 화이트리스트 HTTP 라우터 제거** — 회원 관리(`/admin/members` 승격/강등)로 대체되어 더 이상 어떤 UI도 호출하지 않는 `whitelist_router.py`(`POST/GET/DELETE /admin/whitelist`)와 전용 스키마 `whitelist_schema.py`(`AddWhitelistRequest`/`WhitelistResponse`) 삭제. `v1/__init__.py`의 라우터 등록·`schemas/__init__.py`의 export도 정리.
+- **유지**: `whitelist_use_case`·`whitelist_interactor`·`whitelist_repository`·`whitelist_pg_repository`·`whitelist_dto`·`dependencies/whitelist`·`expert_whitelist_orm` — 회원 승격/강등(`member_interactor`)이 use case로 재사용하므로 그대로 둠.
+
+### Notes
+- 검증: 재시작 후 `GET /admin/whitelist` → **404**, `GET /admin/members` → **200**. 승격/강등 경로 이상 없음.
+- 트레이드오프: 가입하지 않은 이메일을 미리 화이트리스트에 넣는(HTTP) 기능은 사라짐. 승격은 이제 "가입한 회원"에 대해서만 가능(`member_interactor`). 필요 시 라우터 복구 가능.
+
+## [v0.2.8] - 2026-07-20
+
+### Changed
+- **화이트리스트를 가입 게이트 → 관리자 승격 방식으로 개편.** 이메일 회원가입에서 화이트리스트 사전 승인 검사 제거(`auth_interactor.signup`) — 누구나 가입 가능. 역할은 더 이상 하드코딩("expert")하지 않고 **화이트리스트 승격 여부로 결정**(`_resolve_role`: 화이트리스트에 있으면 `expert`, 없으면 `general`)하며 signup·login·refresh·소셜(OAuth) 전 경로에 일관 적용. 소셜 유저도 `oauth_user_pg_repository`에서 화이트리스트로 role 결정(기존 general 하드코딩 제거).
+- `SignupResponse.role` 리터럴을 `Literal["expert"]` → `Literal["expert","general"]`로 확장(`auth_schema`) — 일반회원 가입 응답이 검증 실패하던 문제 해결.
+
+### Added
+- **어드민 회원 관리 슬라이스**(`apps/mfds_admin`, `verify_admin_token` 보호):
+  - `GET /admin/members` — 가입 회원 전체를 승격 여부(`is_expert`)·가입경로·가입일·마지막로그인과 함께 반환(`expert_users` LEFT JOIN `expert_whitelist`).
+  - `POST /admin/members/{email}/promote` — 전문가 승격(화이트리스트 추가, 멱등).
+  - `POST /admin/members/{email}/demote` — 승격 해제(화이트리스트 제거, 멱등).
+  - 프랙탈 세트: `member_dto`·`member_use_case`·`member_interactor`(승격/강등은 기존 `WhitelistUseCase` 재사용)·`member_repository`·`member_pg_repository`·`member_schema`·`member_router`·`dependencies/members`. DB 마이그레이션 불필요(화이트리스트 테이블 재사용).
+
+### Notes
+- E2E 검증: 화이트리스트 없이 가입 → 201·role general → `/admin/members`에 노출(is_expert=false) → promote 204 → 재로그인 role expert → demote 204 → 재로그인 role general. 전 구간 통과.
+
+## [v0.2.7] - 2026-07-20
+
+### Fixed
+- **Alembic 전체 실행 불능 해소** — `alembic/env.py`가 삭제된 `moneyball` 앱의 ORM(`stadium/team/schedule/player_orm`)을 상단에서 import해 `ModuleNotFoundError`로 env.py 로드 자체가 실패, 모든 alembic 명령(`current`/`upgrade`/`revision`)이 죽어 있었음. 해당 import 4줄 제거. 마이그레이션 `1e4fd7b6809c`는 moneyball을 `upgrade()` 내부에서만 import하고 이미 적용 완료(DB에 stadium/team/player 존재) → 재실행되지 않으므로 무해, 체인 보존 위해 파일 유지.
+- 결과: `alembic current`·`alembic upgrade head` 정상화. v0.2.6에서 수동 `ALTER`로 넣었던 `oauth_provider_id`를 롤백 후 **마이그레이션 `20260720_01`로 정식 재적용**(1e4fd7b6809c → 20260720_01, 현재 DB head).
+
+### Notes
+- `env.py`의 `target_metadata`(Base.metadata)에 이제 moneyball 테이블이 없으므로, 향후 `alembic revision --autogenerate` 시 orphan 테이블(stadium/team/player) drop을 제안할 수 있음 — 자동생성 시 검토 필요(수동 마이그레이션엔 영향 없음). orphan 테이블·데이터 정리는 별도 판단 대상이라 손대지 않음.
+
+## [v0.2.6] - 2026-07-20
+
+### Added
+- **소셜 OAuth 로그인/회원가입 (Google·Kakao·Naver)** — `mfds_user`에 Authorization Code 플로우 풀 구현. 흐름: `GET /auth/{provider}/login`(state 발급·Redis 저장 후 제공사 동의로 302) → `GET /auth/{provider}/callback`(state 검증 → 토큰 교환·userinfo → 유저 upsert → 우리 JWT 발급 → Redis 저장 → 프론트 `/auth/callback#access_token=…&refresh_token=…`로 복귀). 프랙탈 세트:
+  - dto `oauth_dto.OAuthProfile`, input port `oauth_use_case`, interactor `oauth_interactor`(provider_factory·user_repo·session_store 주입), router `oauth_router`, DI `dependencies/oauth.py`.
+  - **Provider Strategy + Factory**: `oauth/base_oauth_adapter`(공통 OAuth2 Template Method) + `google/kakao/naver_oauth_adapter`(엔드포인트·scope·프로필 파싱만 override) + `oauth_provider_factory`. 각 어댑터는 `{PREFIX}_CLIENT_ID/SECRET/REDIRECT_URI` env를 읽고, 미설정 시 400. 카카오 이메일 미제공 대비 합성 이메일 fallback.
+  - **Redis 세션 스토어**: `session_store_port` + `redis_session_store_adapter` — 발급 JWT(access/refresh)를 `mfds:user:session:{access|refresh}:*`에 TTL 저장(access=JWT 만료, refresh=`USER_REFRESH_EXPIRE_DAYS` 기본 14일), 유저별 refresh 집합·OAuth state(`mfds:user:oauth:state:*`, 10분) 관리. 키 SSOT `redis/redis_keys.py`.
+  - **소셜 유저 upsert**: `oauth_user_repository` + `oauth_user_pg_repository` — **전문가 화이트리스트 우회**, `expert_users`에 `auth_provider`(google/kakao/naver)로 저장, `(provider, provider_id)` 또는 이메일로 기존 계정 연결, JWT role은 미사용이던 **`general`** 발급(전문가 권한과 구분).
+- `expert_users.oauth_provider_id`(String(255), index) 컬럼 + 마이그레이션 `20260720_01_expert_users_oauth_provider_id.py`(down_revision=`1e4fd7b6809c`).
+- `.env`에 `GOOGLE_*`/`KAKAO_*`/`NAVER_*` (CLIENT_ID/SECRET/REDIRECT_URI)·`FRONTEND_URL`·`USER_JWT_SECRET`·`USER_REFRESH_EXPIRE_DAYS` 플레이스홀더 추가(발급값은 사용자가 채움).
+
+### Notes
+- 검증(더미 자격증명): 3사 authorize URL 생성, Redis state 1회성 소비, DB upsert 멱등, JWT role=general, Redis 세션 저장→조회→로그아웃 삭제 전 구간 통과. 실제 제공사 토큰 교환(`fetch_profile`)은 콘솔 앱 등록·실사용자 필요.
+- (작업 당시) Alembic이 `env.py`의 `moneyball` import로 깨져 있어 새 컬럼을 임시로 수동 `ALTER`로 반영했음 → **v0.2.7에서 env.py 수정 후 마이그레이션 `20260720_01`로 정식 재적용 완료.**
+
+## [v0.2.5] - 2026-07-20
+
+### Changed
+- **API 문서(`/docs`·`/redoc`·`/openapi.json`) 인증 보호** (`main.py`) — 기존엔 누구나 열람 가능했음. `FastAPI(docs_url=None, redoc_url=None, openapi_url=None)`로 기본 라우트를 끄고, HTTP Basic 게이트(`_verify_docs_credentials`, `secrets.compare_digest`)를 통과한 요청에만 노출하는 커스텀 라우트로 대체. 자격증명은 `.env`의 기존 `ADMIN_EMAIL`/`ADMIN_PASSWORD` 재사용(미설정 시 503). 미인증 시 `401 + WWW-Authenticate: Basic` → 브라우저 로그인 창.
+
+### Fixed
+- 전역 `HTTPException` 핸들러(`_http_exception_handler`)가 `exc.headers`를 버려, 401의 `WWW-Authenticate` 등 응답 헤더가 유실되던 문제 수정(`headers=exc.headers` 전달). 이 수정이 없으면 보호된 `/docs`에서 브라우저 Basic 인증 팝업이 뜨지 않음.
+
+## [v0.2.4] - 2026-07-20
+
+### Added
+- **추론 모델 단일 어댑터** `core/matrix/grid_exaone_llm_manager.py` — 임베딩 전용 `grid_embedding_manager`(bge-m3)와 대칭 구조로, 로컬 Ollama EXAONE 추론의 전역 SSOT. `LLM_MODEL`(`EXAONE_MODEL` env, 기본 `exaone3.5:7.8b`)·`OLLAMA_HOST` 상수와 `chat_sync`/`chat`(async, `to_thread`) 제공(`format`·`options` 위임). 모델 문자열·Ollama 클라이언트를 앱마다 하드코딩하지 않으므로 추론 모델이 섞일 수 없음.
+
+### Changed
+- 6개 추론 호출부를 매니저 경유로 통일 — `mfds_user`(`ollama_adapter`, `regulation_chat_interactor`의 langchain `ChatOllama`는 `LLM_MODEL`/`OLLAMA_HOST` 상수만 소싱)·`braindead`(`llm_gateway`, httpx 직접 호출 제거)·`ontology`(`law_rag_adapter`·`exaone_intent_classifier_adapter`)·`core/lol`(`v1_mid_faker_orchestrator`)·`titanic`(`crew_andrews_architect_repository`). 각 파일의 개별 `ollama.Client`·모델 fallback 문자열 제거.
+
+### Fixed
+- 추론 모델 fallback 불일치 정리 — 흩어져 있던 `exaone3.5:2.4b`(4곳)·`anpigon/eeve-korean-10.8b`(titanic)를 단일 `exaone3.5:7.8b`로 통일. env 미설정 시 `core/lol`·`titanic`이 각각 2.4b·eeve로 갈라지던 문제 해소.
+
+### Removed
+- 분산 env 변수 `BRAINDEAD_MODEL`·`OLLAMA_MODEL_LOL`·(titanic)`OLLAMA_MODEL` 및 `.env`의 `BRAINDEAD_MODEL` 항목 — 추론 모델 지정은 `EXAONE_MODEL` 하나로 단일화. `FakerOrchestrator`의 per-instance `model` 오버라이드 인자 제거(모델 혼입 차단).
+
 ## [v0.2.3] - 2026-07-16
 
 ### Added

@@ -11,7 +11,8 @@ class ExpertUserORM(UserORM):
     email: Mapped[str] = mapped_column(String(255), unique=True, index=True, nullable=False)
     name: Mapped[str | None] = mapped_column(String(100), nullable=True)
     picture: Mapped[str | None] = mapped_column(String(500), nullable=True)
-    auth_provider: Mapped[str] = mapped_column(String(20), default="email", nullable=False)  # 'google' | 'email'
+    auth_provider: Mapped[str] = mapped_column(String(20), default="email", nullable=False)  # 'email' | 'google' | 'kakao' | 'naver'
+    oauth_provider_id: Mapped[str | None] = mapped_column(String(255), index=True, nullable=True)  # 소셜 제공사 고유 subject
     hashed_password: Mapped[str | None] = mapped_column(String(255), nullable=True)
     last_login: Mapped[datetime | None] = mapped_column(DateTime(timezone=True), nullable=True)
 

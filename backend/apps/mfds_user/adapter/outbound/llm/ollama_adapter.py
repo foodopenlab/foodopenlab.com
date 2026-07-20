@@ -1,23 +1,18 @@
 import asyncio
 import logging
-import os
 from typing import Optional
 
-import ollama
+from matrix.grid_exaone_llm_manager import LLM_MODEL, chat_sync
 
 from mfds_user.app.ports.output.llm_port import LlmPort
 from mfds_user.app.services.settings_service import read_admin_settings
 
 logger = logging.getLogger(__name__)
 
-_DEFAULT_MODEL = "exaone3.5:2.4b"
-_OLLAMA_HOST = os.getenv("OLLAMA_HOST", "http://host.docker.internal:11434")
-
 
 class OllamaAdapter(LlmPort):
     def __init__(self) -> None:
-        self._model = os.getenv("EXAONE_MODEL", _DEFAULT_MODEL)
-        self._client = ollama.Client(host=_OLLAMA_HOST)
+        self._model = LLM_MODEL  # 로깅용
 
     async def generate_reply(
         self,
@@ -49,6 +44,4 @@ class OllamaAdapter(LlmPort):
                 messages.append({"role": role, "content": content})
         messages.append({"role": "user", "content": message})
 
-        response = self._client.chat(model=self._model, messages=messages)
-        text = (response.message.content or "").strip()
-        return text or "응답을 생성하지 못했습니다."
+        return chat_sync(messages) or "응답을 생성하지 못했습니다."

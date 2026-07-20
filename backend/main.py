@@ -9,7 +9,8 @@ import json
 import logging
 from contextlib import asynccontextmanager
 from pathlib import Path
-from typing import Any
+import secrets
+from typing import Annotated, Any
 
 # psycopg async(=SQLAlchemy async)가 Windows에서 ProactorEventLoop를 만나면 실패합니다.
 # 이벤트 루프 정책이 실제로 Selector로 잡히는지 로그로 남겨 문제 재현을 빠르게 합니다.
@@ -74,7 +75,9 @@ except ModuleNotFoundError:
 from fastapi import Depends, FastAPI, HTTPException, Request
 from fastapi.encoders import jsonable_encoder
 from fastapi.middleware.cors import CORSMiddleware
-from fastapi.responses import JSONResponse
+from fastapi.openapi.docs import get_redoc_html, get_swagger_ui_html
+from fastapi.responses import HTMLResponse, JSONResponse
+from fastapi.security import HTTPBasic, HTTPBasicCredentials
 from pydantic import BaseModel
 from sqlalchemy.ext.asyncio import AsyncSession
 
@@ -279,7 +282,14 @@ async def lifespan(app: FastAPI):
         await dispose_engine()
 
 
-app = FastAPI(title="Foodopenlab Main Page", lifespan=lifespan)
+# docs_url·redoc_url·openapi_url을 끄고, 아래에서 HTTP Basic으로 보호한 커스텀 라우트로 대체한다.
+app = FastAPI(
+    title="Foodopenlab Main Page",
+    lifespan=lifespan,
+    docs_url=None,
+    redoc_url=None,
+    openapi_url=None,
+)
 
 # 로컬 개발용 기본 오리진. 운영 도메인(Vercel/Cloudflare)은 CORS_ORIGINS 환경변수로 추가한다.
 # 예) CORS_ORIGINS=https://foodopenlab.com,https://www.foodopenlab.com
@@ -306,6 +316,45 @@ app.include_router(braindead_router, prefix="/api")
 app.include_router(vision_router, prefix="/api")
 
 
+# --- Swagger/OpenAPI 문서 보호 (HTTP Basic · ADMIN_EMAIL/ADMIN_PASSWORD) ---
+# 기본 문서 라우트는 위에서 비활성화했고, 아래 인증 게이트를 통과한 요청에만 노출한다.
+_docs_basic = HTTPBasic()
+
+
+def _verify_docs_credentials(
+    credentials: Annotated[HTTPBasicCredentials, Depends(_docs_basic)],
+) -> str:
+    admin_user = (os.getenv("ADMIN_EMAIL") or "").strip()
+    admin_pass = os.getenv("ADMIN_PASSWORD") or ""
+    if not admin_user or not admin_pass:
+        raise HTTPException(status_code=503, detail="문서 인증 설정이 완료되지 않았습니다.")
+    # 타이밍 공격 방지를 위해 compare_digest 사용. 하나라도 어긋나면 401 + Basic 재요청.
+    user_ok = secrets.compare_digest(credentials.username.strip(), admin_user)
+    pass_ok = secrets.compare_digest(credentials.password, admin_pass)
+    if not (user_ok and pass_ok):
+        raise HTTPException(
+            status_code=401,
+            detail="인증이 필요합니다",
+            headers={"WWW-Authenticate": "Basic"},
+        )
+    return credentials.username
+
+
+@app.get("/openapi.json", include_in_schema=False)
+async def _protected_openapi(_: Annotated[str, Depends(_verify_docs_credentials)]) -> JSONResponse:
+    return JSONResponse(app.openapi())
+
+
+@app.get("/docs", include_in_schema=False)
+async def _protected_swagger(_: Annotated[str, Depends(_verify_docs_credentials)]) -> HTMLResponse:
+    return get_swagger_ui_html(openapi_url="/openapi.json", title=f"{app.title} - Swagger UI")
+
+
+@app.get("/redoc", include_in_schema=False)
+async def _protected_redoc(_: Annotated[str, Depends(_verify_docs_credentials)]) -> HTMLResponse:
+    return get_redoc_html(openapi_url="/openapi.json", title=f"{app.title} - ReDoc")
+
+
 @app.exception_handler(ExternalApiBudgetExceeded)
 async def _external_api_budget_handler(_request: Request, exc: ExternalApiBudgetExceeded) -> JSONResponse:
     return JSONResponse(status_code=429, content={"detail": exc.message})
@@ -316,7 +365,8 @@ async def _http_exception_handler(_request: Request, exc: HTTPException) -> JSON
     detail = exc.detail
     if isinstance(detail, list):
         detail = jsonable_encoder(detail)
-    return JSONResponse(status_code=exc.status_code, content={"detail": detail})
+    # exc.headers 보존 — 401 Basic 인증의 WWW-Authenticate 헤더가 없으면 브라우저 로그인 창이 뜨지 않는다.
+    return JSONResponse(status_code=exc.status_code, content={"detail": detail}, headers=exc.headers)
 
 
 @app.exception_handler(Exception)

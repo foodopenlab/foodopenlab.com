@@ -2,11 +2,12 @@ from __future__ import annotations
 
 import asyncio
 import logging
-import os
 from typing import Any, cast
 
 from kiwipiepy import Kiwi, Token
 from sqlalchemy.ext.asyncio import AsyncSession
+
+from matrix.grid_exaone_llm_manager import chat_sync
 
 from titanic.app.dtos.crew_andrews_architect_dto import AndrewsArchitectQuery, AndrewsArchitectResponse
 
@@ -45,7 +46,6 @@ _INTENT_PRIORITY: tuple[str, ...] = (
     "SURVIVAL_PREDICT",
 )
 
-_DEFAULT_OLLAMA_MODEL = "anpigon/eeve-korean-10.8b:latest"
 _DEFAULT_SYSTEM = (
     "당신은 타이타닉 호 승객 데이터를 돕는 조언자입니다. "
     "짧고 명확한 한국어로 답하세요."
@@ -88,22 +88,14 @@ class AndrewsArchitectRepository:
         }
 
     def _respond_sync(self, message: str, context: str | None) -> str:
-        import ollama
-
-        model = os.getenv("OLLAMA_MODEL", _DEFAULT_OLLAMA_MODEL)
         cleaned = self.kiwi.space(message)
         system = context or _DEFAULT_SYSTEM
-        response = ollama.chat(
-            model=model,
-            messages=[
+        return chat_sync(
+            [
                 {"role": "system", "content": system},
                 {"role": "user", "content": cleaned},
-            ],
-        )
-        content = response.message.content
-        if not content or not content.strip():
-            return "응답을 생성하지 못했습니다."
-        return content.strip()
+            ]
+        ) or "응답을 생성하지 못했습니다."
 
     async def respond(self, message: str, context: str | None = None) -> str:
         '''Ollama로 자연어 응답 생성 (blocking I/O → thread)'''
@@ -113,7 +105,7 @@ class AndrewsArchitectRepository:
             logger.warning("[AndrewsArchitectRepository] Ollama 실패 | error=%s", exc)
             return (
                 "Ollama에 연결할 수 없습니다. "
-                "로컬 Ollama 실행 및 OLLAMA_MODEL 설정을 확인해 주세요."
+                "로컬 Ollama 실행 및 EXAONE_MODEL 설정을 확인해 주세요."
             )
 
     async def introduce_myself(self, query: AndrewsArchitectQuery) -> AndrewsArchitectResponse:

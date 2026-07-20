@@ -2,7 +2,8 @@ from typing import Literal
 
 from pydantic import BaseModel, Field
 
-SignupPublicRole = Literal["expert"]
+# 역할은 서버가 화이트리스트 승격 여부로 결정 — 신규 가입은 보통 general.
+SignupPublicRole = Literal["expert", "general"]
 
 
 class SignupRequest(BaseModel):

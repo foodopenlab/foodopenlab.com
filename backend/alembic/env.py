@@ -25,10 +25,8 @@ import titanic.adapter.outbound.orm.titanic_booking_orm  # noqa: F401, E402
 import titanic.adapter.outbound.orm.crew_smith_captain_orm  # noqa: F401, E402
 import mfds_user.adapter.outbound.orm  # noqa: F401, E402
 import mfds_admin.adapter.outbound.orm  # noqa: F401, E402
-import moneyball.adapter.outbound.orm.stadium_orm  # noqa: F401, E402
-import moneyball.adapter.outbound.orm.team_orm  # noqa: F401, E402
-import moneyball.adapter.outbound.orm.schedule_orm  # noqa: F401, E402
-import moneyball.adapter.outbound.orm.player_orm  # noqa: F401, E402
+# NOTE: moneyball 앱은 제거됨. 해당 ORM import는 env.py 로드를 실패시켜 alembic 전체를 죽였으므로 삭제.
+# 마이그레이션 1e4fd7b6809c는 moneyball을 upgrade() 내부에서만 import하며 이미 적용 완료 → 재실행되지 않음.
 
 config = context.config
 

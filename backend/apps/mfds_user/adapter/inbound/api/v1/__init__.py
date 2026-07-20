@@ -1,5 +1,6 @@
 from fastapi import APIRouter
 from mfds_user.adapter.inbound.api.v1.auth_router import router as auth_router
+from mfds_user.adapter.inbound.api.v1.oauth_router import router as oauth_router
 from mfds_user.adapter.inbound.api.v1.agent_router import router as agent_router
 from mfds_user.adapter.inbound.api.v1.recall_router import router as recall_router
 from mfds_user.adapter.inbound.api.v1.enforcement_router import router as enforcement_router
@@ -17,6 +18,7 @@ from mfds_user.adapter.inbound.api.v1.data_sync_router import router as data_syn
 
 user_router = APIRouter()
 user_router.include_router(auth_router)
+user_router.include_router(oauth_router)
 user_router.include_router(agent_router)
 user_router.include_router(recall_router)
 user_router.include_router(enforcement_router)

@@ -14,7 +14,7 @@ import {
   MessageSquare,
   Radar,
   ScanFace,
-  UserCheck,
+  Users,
 } from "lucide-react"
 
 export type AdminNavItem = {
@@ -30,7 +30,7 @@ export const ADMIN_NAV_ITEMS: AdminNavItem[] = [
   { href: "/admin/lesson/titanic", label: "수업용", icon: GraduationCap },
   { href: "/admin/siliconvalley", label: "실리콘밸리", icon: Cpu },
   { href: "/admin/logs", label: "통합 로그", icon: FileText },
-  { href: "/admin/whitelist", label: "화이트리스트", icon: UserCheck },
+  { href: "/admin/members", label: "회원 관리", icon: Users },
   { href: "/admin/api-stats", label: "API 통계", icon: BarChart2 },
   { href: "/admin/braindead/email", label: "메일 보내기", icon: Mail, section: "자동화" },
   { href: "/admin/braindead/contacts", label: "주소록", icon: BookUser },
