@@ -9,9 +9,17 @@ from sqlalchemy import select, delete
 from matrix.grid_oracle_database_manager import get_db
 from mfds_user.dependencies.auth_helper import verify_token, UserTokenPayload
 from mfds_user.adapter.outbound.orm.expert_user_orm import ExpertUserORM
+from mfds_admin.adapter.outbound.orm.expert_whitelist_orm import ExpertWhitelistORM
 from mfds_user.app.services.security import hash_password, verify_password
 
 router = APIRouter(prefix="/mypage", tags=["mypage"])
+
+
+async def _resolve_role(session: AsyncSession, email: str) -> str:
+    """전문가 여부는 화이트리스트(관리자 승격) 등재 여부로 판정 — 없으면 일반(general)."""
+    query = select(ExpertWhitelistORM.email).where(ExpertWhitelistORM.email == email)
+    promoted = (await session.execute(query)).scalar_one_or_none()
+    return "expert" if promoted else "general"
 
 class ProfileResponse(BaseModel):
     id: str
@@ -50,7 +58,7 @@ async def get_profile(
         id=str(user.id),
         email=user.email,
         name=user.name,
-        role="expert",  # Returns 'expert' role for expert users
+        role=await _resolve_role(session, user.email),
         is_active=True,
         last_login_at=user.last_login.isoformat() if user.last_login else None,
         created_at=user.created_at.isoformat()
@@ -81,7 +89,7 @@ async def update_profile(
         id=str(user.id),
         email=user.email,
         name=user.name,
-        role="expert",
+        role=await _resolve_role(session, user.email),
         is_active=True,
         last_login_at=user.last_login.isoformat() if user.last_login else None,
         created_at=user.created_at.isoformat()
