@@ -1,6 +1,6 @@
 "use client"
 
-import { useEffect, useState } from "react"
+import { Suspense, useEffect, useState } from "react"
 import { useRouter, useSearchParams } from "next/navigation"
 import { ShieldCheck } from "lucide-react"
 import { Button } from "@/components/ui/button"
@@ -20,7 +20,7 @@ const ERROR_MESSAGES: Record<string, string> = {
   oauth: "구글 로그인에 실패했습니다. 다시 시도해 주세요.",
 }
 
-export default function AdminLoginPage() {
+function AdminLoginContent() {
   const router = useRouter()
   const searchParams = useSearchParams()
   const [loading, setLoading] = useState(false)
@@ -85,5 +85,19 @@ export default function AdminLoginPage() {
         {error ? <p className="mt-4 text-center text-sm text-destructive">{error}</p> : null}
       </div>
     </div>
+  )
+}
+
+export default function AdminLoginPage() {
+  return (
+    <Suspense
+      fallback={
+        <div className="flex min-h-screen items-center justify-center bg-background">
+          <Spinner className="size-6" />
+        </div>
+      }
+    >
+      <AdminLoginContent />
+    </Suspense>
   )
 }
