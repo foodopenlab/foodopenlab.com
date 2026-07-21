@@ -2,7 +2,7 @@
 
 import Link from "next/link"
 import { usePathname } from "next/navigation"
-import { User, Lock, UserMinus, FileText, SlidersHorizontal } from "lucide-react"
+import { User, UserMinus, FileText, SlidersHorizontal } from "lucide-react"
 import { RoleBadge } from "./role-badge"
 import { cn } from "@/lib/utils"
 
@@ -32,12 +32,6 @@ export function Sidebar({ userName, role }: SidebarProps) {
       href: "/mypage/industry",
       icon: SlidersHorizontal,
       show: role === "expert",
-    },
-    {
-      title: "비밀번호 변경",
-      href: "/mypage/password",
-      icon: Lock,
-      show: true,
     },
     {
       title: "회원 탈퇴",

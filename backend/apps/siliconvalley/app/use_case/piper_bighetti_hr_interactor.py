@@ -1,14 +1,15 @@
 from __future__ import annotations
 
-from siliconvalley.app.dtos.piper_bighetti_hr_dto import BighettiHrQuery, BighettiHrResponse
+from siliconvalley.app.dtos.piper_bighetti_hr_dto import BighettiHrResponse
 from siliconvalley.app.ports.input.piper_bighetti_hr_use_case import BighettiHrUseCase
-from siliconvalley.app.ports.output.piper_bighetti_hr_port import BighettiHrPort
+from siliconvalley.domain.piper_crew_registry import get_crew_member
+from siliconvalley.domain.value_objects.piper_role_vo import PiperRole
 
 
 class BighettiHrInteractor(BighettiHrUseCase):
 
-    def __init__(self, repository: BighettiHrPort) -> None:
-        self._repository = repository
+    _ROLE = PiperRole.HR
 
-    async def introduce_myself(self, query: BighettiHrQuery) -> BighettiHrResponse:
-        return await self._repository.introduce_myself(query)
+    async def introduce_myself(self) -> BighettiHrResponse:
+        member = get_crew_member(self._ROLE)
+        return BighettiHrResponse(id=member.id, name=member.name)

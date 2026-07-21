@@ -6,9 +6,9 @@ from sqlalchemy.ext.asyncio import AsyncSession
 from mfds_admin.app.ports.output.logs_repository import LogsRepositoryPort
 from mfds_admin.app.dtos.logs_dto import ApiUsageLogDTO, SearchLogDTO
 from mfds_admin.adapter.outbound.orm.api_usage_log_orm import ApiUsageLogORM
-from mfds_admin.adapter.outbound.orm.search_log_orm import SearchLogORM
-from mfds_user.adapter.outbound.orm.expert_user_orm import ExpertUserORM
-from mfds_user.adapter.outbound.orm.agent_message_orm import AgentMessageORM
+from matrix.orm.search_log_orm import SearchLogORM
+from matrix.orm.expert_user_orm import ExpertUserORM
+from matrix.orm.agent_message_orm import AgentMessageORM
 
 class LogsPgRepository(LogsRepositoryPort):
     def __init__(self, session: AsyncSession) -> None:

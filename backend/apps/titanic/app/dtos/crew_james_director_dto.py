@@ -11,3 +11,9 @@ class JamesDirectorQuery:
 class JamesDirectorResponse:
     id: int
     name: str
+
+
+@dataclass(frozen=True)
+class UploadResult:
+    saved: int
+    count: int

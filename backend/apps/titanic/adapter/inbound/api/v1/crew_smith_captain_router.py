@@ -3,8 +3,14 @@ from typing import Annotated
 
 from fastapi import APIRouter, Body, Depends
 
-from titanic.adapter.inbound.api.schemas.crew_smith_captain_schema import ChatSchema, SmithCaptainSchema
-from titanic.app.dtos.crew_smith_captain_dto import SmithCaptainResponse, ChatResponse
+from titanic.adapter.inbound.api.schemas.crew_smith_captain_schema import ChatSchema
+from titanic.app.dtos.crew_smith_captain_dto import (
+    ChatCommand,
+    ChatMessage,
+    ChatResponse,
+    SmithCaptainQuery,
+    SmithCaptainResponse,
+)
 from titanic.app.ports.input.crew_smith_captain_use_case import SmithCaptainUseCase
 from titanic.dependencies.crew_smith_captain_provider import get_smith_captain_use_case
 
@@ -28,13 +34,17 @@ async def chat(
 ) -> ChatResponse:
     for msg in schema.messages:
         logger.info("[smith/chat] messages | role=%s | text=%s", msg.role, msg.text)
-    return await smith.chat(schema)
+    command = ChatCommand(
+        messages=[ChatMessage(role=m.role, text=m.text) for m in schema.messages],
+        system_instruction=schema.systemInstruction,
+    )
+    return await smith.chat(command)
 
 @smith_captain_router.get("/myself")
 async def introduce_myself(
     smith: SmithCaptainUseCase = Depends(get_smith_captain_use_case)
 ) -> SmithCaptainResponse :
-    return await smith.introduce_myself(SmithCaptainSchema(
+    return await smith.introduce_myself(SmithCaptainQuery(
             id=7,
             name="스미스 선장 (Captain Edward John Smith)"
         )

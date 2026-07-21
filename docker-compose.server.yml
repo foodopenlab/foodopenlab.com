@@ -1,5 +1,13 @@
 # docker-compose.server.yml — 원격 서버 배포용 (Docker Hub 이미지 pull)
 #
+# 다중 프로젝트 공존 규칙 (기존 서버 관례에 맞춤):
+#   - 디렉토리 분리 : 이 프로젝트만의 별도 디렉토리에서 실행
+#   - 컨테이너 접두어: foodopenlab_*  (전역 네임스페이스 충돌 방지)
+#   - 호스트 포트    : 1만번대 오프셋 (기존 프로젝트의 기본 포트와 충돌 방지)
+#       pgvector 15432 · redis 16379 · neo4j 17474/17687 · law_mcp 13100 · backend 18000
+#   ※ 컨테이너 '내부' 포트와 서비스명(pgvector/redis/graph_db/korean_law_mcp)은
+#      프로젝트 네트워크 안에서만 유효하므로 변경하지 않는다. backend/.env 도 수정 불필요.
+#
 # 로컬 개발용 docker-compose.yaml 과의 차이:
 #   - backend: build 하지 않고 Docker Hub 이미지를 pull (kcs8815/foodopenlab-backend)
 #   - frontend 제외 (Vercel에 배포됨)
@@ -17,10 +25,10 @@ services:
   # ── Databases ──────────────────────────────────────────────────────
   pgvector:
     image: pgvector/pgvector:pg17
-    container_name: pgvector
+    container_name: foodopenlab_pgvector
     restart: unless-stopped
     ports:
-      - "5432:5432"
+      - "15432:5432"
     environment:
       POSTGRES_USER: ${POSTGRES_USER}
       POSTGRES_PASSWORD: ${POSTGRES_PASSWORD}
@@ -35,10 +43,10 @@ services:
 
   redis:
     image: redis:7.4-alpine
-    container_name: redis
+    container_name: foodopenlab_redis
     restart: unless-stopped
     ports:
-      - "6379:6379"
+      - "16379:6379"
     volumes:
       - redis_data:/data
     healthcheck:
@@ -49,11 +57,11 @@ services:
 
   graph_db:
     image: neo4j:5.18-community
-    container_name: graph_db
+    container_name: foodopenlab_graph_db
     restart: unless-stopped
     ports:
-      - "7474:7474"
-      - "7687:7687"
+      - "17474:7474"
+      - "17687:7687"
     environment:
       NEO4J_AUTH: neo4j/${NEO4J_PASSWORD}
       NEO4J_PLUGINS: '["apoc"]'
@@ -68,14 +76,14 @@ services:
 
   korean_law_mcp:
     image: node:20-alpine
-    container_name: korean_law_mcp
+    container_name: foodopenlab_korean_law_mcp
     restart: unless-stopped
     working_dir: /app
     command: >
       sh -c "npm install -g korean-law-mcp &&
              korean-law-mcp --mode http --port 3100"
     ports:
-      - "3100:3100"
+      - "13100:3100"
     environment:
       LAW_OC: ${LAW_API_KEY}
       CORS_ORIGIN: ${KOREAN_LAW_MCP_CORS_ORIGIN:-http://localhost:8000}
@@ -89,11 +97,11 @@ services:
   # ── Application (Docker Hub 이미지) ─────────────────────────────────
   backend:
     image: kcs8815/foodopenlab-backend:latest
-    container_name: fastapi_backend
+    container_name: foodopenlab_fastapi_backend
     restart: unless-stopped
     pull_policy: always
     ports:
-      - "8000:8000"
+      - "18000:8000"
     env_file:
       - ./backend/.env
     environment:
@@ -124,7 +132,7 @@ services:
   # ── Tunnel ─────────────────────────────────────────────────────────
   cloudflared:
     image: cloudflare/cloudflared:latest
-    container_name: cloudflared
+    container_name: foodopenlab_cloudflared
     restart: unless-stopped
     command: tunnel --no-autoupdate run --token ${CLOUDFLARE_TUNNEL_TOKEN}
     depends_on:

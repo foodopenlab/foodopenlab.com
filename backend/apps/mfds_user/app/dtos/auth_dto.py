@@ -3,19 +3,6 @@ from uuid import UUID
 from datetime import datetime
 
 @dataclass(frozen=True)
-class SignupCommand:
-    email: str
-    password: str
-    name: str
-    agreed: bool
-    role: str
-
-@dataclass(frozen=True)
-class LoginCommand:
-    email: str
-    password: str
-
-@dataclass(frozen=True)
 class UserSessionDTO:
     user_id: UUID
     email: str

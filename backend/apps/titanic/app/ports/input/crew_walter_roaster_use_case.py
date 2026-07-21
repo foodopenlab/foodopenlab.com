@@ -4,8 +4,7 @@ from abc import ABC, abstractmethod
 
 import pandas as pd
 
-from titanic.adapter.inbound.api.schemas.crew_walter_roaster_schema import WalterRoasterSchema
-from titanic.app.dtos.crew_walter_roaster_dto import WalterRoasterResponse
+from titanic.app.dtos.crew_walter_roaster_dto import WalterRoasterQuery, WalterRoasterResponse
 
 
 class WalterRoasterUseCase(ABC):
@@ -23,5 +22,5 @@ class WalterRoasterUseCase(ABC):
         '''train 승객 생존·사망 집계'''
 
     @abstractmethod
-    async def introduce_myself(self, schema: WalterRoasterSchema) -> WalterRoasterResponse:
+    async def introduce_myself(self, query: WalterRoasterQuery) -> WalterRoasterResponse:
         '''월터의 자기소개 메소드'''

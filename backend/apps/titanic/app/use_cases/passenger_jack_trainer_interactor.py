@@ -1,22 +1,27 @@
 from __future__ import annotations
 
 import logging
+from collections.abc import Callable
 from typing import Any
 
 from sklearn.model_selection import train_test_split
 
-from titanic.adapter.inbound.api.schemas.passenger_jack_trainer_schema import JackTrainerSchema
-from titanic.adapter.outbound.orm.passenger_rose_model_strategies import build_all_strategies
 from titanic.app.dtos.passenger_jack_trainer_dto import JackTrainerQuery, JackTrainerResponse
 from titanic.app.ports.input.passenger_jack_trainer_use_case import JackTrainerUseCase
+from titanic.app.ports.input.passenger_rose_model_use_case import SurvivalModelStrategy
 
 logger = logging.getLogger(__name__)
 
 
 class JackTrainerInteractor(JackTrainerUseCase):
 
-    def __init__(self, repository: Any):
+    def __init__(
+        self,
+        repository: Any,
+        build_strategies: Callable[[], dict[str, type[SurvivalModelStrategy]]],
+    ):
         self.repository = repository
+        self._build_strategies = build_strategies
         self._trained_strategies: dict = {}
 
     async def train_model(
@@ -33,7 +38,7 @@ class JackTrainerInteractor(JackTrainerUseCase):
 
         self._trained_strategies = {}
         trained_names = []
-        for key, StrategyClass in build_all_strategies().items():
+        for key, StrategyClass in self._build_strategies().items():
             strategy = StrategyClass()
             try:
                 strategy.fit(x_fit, y_fit)
@@ -51,8 +56,5 @@ class JackTrainerInteractor(JackTrainerUseCase):
             "y_test": y_val,
         }
 
-    async def introduce_myself(self, schema: JackTrainerSchema) -> JackTrainerResponse:
-        return await self.repository.introduce_myself(JackTrainerQuery(
-            id=schema.id,
-            name=schema.name,
-        ))
+    async def introduce_myself(self, query: JackTrainerQuery) -> JackTrainerResponse:
+        return await self.repository.introduce_myself(query)

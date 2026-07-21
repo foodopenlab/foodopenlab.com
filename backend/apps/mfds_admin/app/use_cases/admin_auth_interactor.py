@@ -3,11 +3,11 @@ import logging
 from datetime import datetime, timedelta, timezone
 import jwt
 from typing import Optional
-from fastapi import HTTPException
 from mfds_admin.app.ports.input.admin_auth_use_case import AdminAuthUseCase
 from mfds_admin.app.ports.output.admin_repository import AdminRepositoryPort
 from mfds_admin.app.dtos.admin_auth_dto import AdminLoginCommand, AdminTokenDTO
-from mfds_user.app.services.security import verify_password
+from mfds_admin.app.exceptions import AdminAuthError, AdminConfigError
+from matrix.grid_cypher_password_manager import verify_password
 
 logger = logging.getLogger(__name__)
 
@@ -32,19 +32,16 @@ class AdminAuthInteractor(AdminAuthUseCase):
     async def login(self, command: AdminLoginCommand) -> AdminTokenDTO:
         if not (os.getenv("ADMIN_JWT_SECRET") or "").strip():
             logger.error("ADMIN_JWT_SECRET 미설정 — Admin 로그인 불가")
-            raise HTTPException(
-                status_code=503,
-                detail="Admin JWT 서버 설정(ADMIN_JWT_SECRET)이 필요합니다.",
-            )
+            raise AdminConfigError("Admin JWT 서버 설정(ADMIN_JWT_SECRET)이 필요합니다.")
 
         user = await self._repo.get_admin_by_email(command.email)
         if user is None:
             logger.warning("Admin 로그인 실패 — 계정 없음 email=%s", command.email)
-            raise HTTPException(status_code=401, detail="이메일 또는 비밀번호가 올바르지 않습니다")
+            raise AdminAuthError("이메일 또는 비밀번호가 올바르지 않습니다")
 
         if not verify_password(command.password, user.hashed_password):
             logger.warning("Admin 로그인 실패 — 비밀번호 불일치 email=%s", command.email)
-            raise HTTPException(status_code=401, detail="이메일 또는 비밀번호가 올바르지 않습니다")
+            raise AdminAuthError("이메일 또는 비밀번호가 올바르지 않습니다")
 
         token = create_admin_token(str(user.id), user.email)
         await self._repo.update_last_login(user.id)

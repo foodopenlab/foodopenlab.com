@@ -5,7 +5,7 @@ from braindead.adapter.inbound.api.schemas.watcher_schema import (
     FilterCheckResponse,
     WatcherSchema,
 )
-from braindead.app.dtos.watcher_dto import WatcherResponse
+from braindead.app.dtos.watcher_dto import WatcherQuery, WatcherResponse
 from braindead.app.ports.input.watcher_use_case import IWatcherUseCase
 from braindead.dependencies.watcher_provider import get_watcher_use_case
 
@@ -16,7 +16,7 @@ router = APIRouter(tags=["braindead"])
 async def introduce_myself(
     use_case: IWatcherUseCase = Depends(get_watcher_use_case),
 ) -> WatcherResponse:
-    return await use_case.introduce_myself(WatcherSchema(id=0, name="Watcher"))
+    return await use_case.introduce_myself(WatcherQuery(id=0, name="Watcher"))
 
 
 @router.post("/watcher/filter", response_model=FilterCheckResponse)

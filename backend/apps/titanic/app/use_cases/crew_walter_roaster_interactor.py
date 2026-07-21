@@ -4,7 +4,6 @@ from typing import Any
 
 import pandas as pd
 
-from titanic.adapter.inbound.api.schemas.crew_walter_roaster_schema import WalterRoasterSchema
 from titanic.app.dtos.crew_walter_roaster_dto import WalterRoasterQuery, WalterRoasterResponse
 from titanic.app.ports.input.crew_walter_roaster_use_case import WalterRoasterUseCase
 
@@ -39,8 +38,5 @@ class WalterRoasterInteractor(WalterRoasterUseCase):
     async def get_train_stats(self) -> dict[str, int | float]:
         return await self.repository.get_train_stats()
 
-    async def introduce_myself(self, schema: WalterRoasterSchema) -> WalterRoasterResponse:
-        return await self.repository.introduce_myself(WalterRoasterQuery(
-            id=schema.id,
-            name=schema.name,
-        ))
+    async def introduce_myself(self, query: WalterRoasterQuery) -> WalterRoasterResponse:
+        return await self.repository.introduce_myself(query)

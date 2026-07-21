@@ -3,8 +3,7 @@ from typing import List, Annotated
 from uuid import UUID
 
 from mfds_user.dependencies.auth_helper import verify_token, UserTokenPayload
-from mfds_admin.adapter.inbound.api.middlewares.admin_auth_middleware import verify_admin_token
-from mfds_admin.adapter.inbound.api.schemas.admin_auth_schema import AdminTokenPayloadSchema
+from matrix.grid_admin_guard_manager import verify_admin_jwt
 
 from mfds_user.app.ports.input.report_feedback_use_case import ReportFeedbackUseCase
 from mfds_user.dependencies.report_feedback import get_report_feedback_use_case
@@ -68,7 +67,7 @@ async def get_my_feedback(
 
 @router.get("/admin/report-feedback/analysis", response_model=List[FeedbackAnalysisResponseSchema])
 async def get_feedback_analysis(
-    admin: Annotated[AdminTokenPayloadSchema, Depends(verify_admin_token)],
+    _admin: Annotated[str, Depends(verify_admin_jwt)],
     industry_code: str | None = None,
     use_case: ReportFeedbackUseCase = Depends(get_report_feedback_use_case)
 ) -> List[FeedbackAnalysisResponseSchema]:
@@ -93,7 +92,7 @@ async def get_feedback_analysis(
 @router.post("/admin/report-feedback/analyze", response_model=FeedbackAnalysisResponseSchema)
 async def analyze_feedback(
     req: FeedbackAnalysisTriggerRequestSchema,
-    admin: Annotated[AdminTokenPayloadSchema, Depends(verify_admin_token)],
+    _admin: Annotated[str, Depends(verify_admin_jwt)],
     use_case: ReportFeedbackUseCase = Depends(get_report_feedback_use_case)
 ) -> FeedbackAnalysisResponseSchema:
     try:

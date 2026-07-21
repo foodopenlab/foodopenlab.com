@@ -5,9 +5,12 @@ from fastapi import APIRouter, Depends, File, HTTPException, UploadFile
 
 from titanic.adapter.inbound.api.schemas.crew_james_director_schema import (
     FileUploadSchema,
-    JamesDirectorSchema,
     UploadResultSchema,
 )
+from titanic.adapter.inbound.mappers.crew_james_director_mapper import (
+    file_upload_schemas_to_upload_entities,
+)
+from titanic.app.dtos.crew_james_director_dto import JamesDirectorQuery
 from titanic.app.ports.input.crew_james_director_use_case import JamesDirectorUseCase
 from titanic.dependencies.crew_james_director_provider import get_james_director_use_case
 
@@ -26,7 +29,7 @@ async def introduce_myself(
     james: JamesDirectorUseCase = Depends(get_james_director_use_case),
 ):
     return await james.introduce_myself(
-        JamesDirectorSchema(
+        JamesDirectorQuery(
             id=6,
             name="제임스 카메론 (James Carmeron)",
         )
@@ -38,9 +41,10 @@ async def upload_titanic_file(
     file: UploadFile = File(...),
     james: JamesDirectorUseCase = Depends(get_james_director_use_case),
 ):
-    return await james.upload_titanic_file(
-        _parse_csv((await file.read()).decode("utf-8", errors="replace"))
-    )
+    rows = _parse_csv((await file.read()).decode("utf-8", errors="replace"))
+    # 경계 매핑(Schema→Entity)은 inbound adapter(router)의 책임 — use case에는 엔티티만 넘긴다.
+    passengers, bookings = file_upload_schemas_to_upload_entities(rows)
+    return await james.upload_titanic_file(passengers, bookings)
 
 
 def _parse_csv(text: str) -> list[FileUploadSchema]:

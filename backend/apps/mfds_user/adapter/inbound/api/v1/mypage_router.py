@@ -8,9 +8,8 @@ from sqlalchemy import select, delete
 
 from matrix.grid_oracle_database_manager import get_db
 from mfds_user.dependencies.auth_helper import verify_token, UserTokenPayload
-from mfds_user.adapter.outbound.orm.expert_user_orm import ExpertUserORM
-from mfds_admin.adapter.outbound.orm.expert_whitelist_orm import ExpertWhitelistORM
-from mfds_user.app.services.security import hash_password, verify_password
+from matrix.orm.expert_user_orm import ExpertUserORM
+from matrix.orm.expert_whitelist_orm import ExpertWhitelistORM
 
 router = APIRouter(prefix="/mypage", tags=["mypage"])
 
@@ -32,11 +31,6 @@ class ProfileResponse(BaseModel):
 
 class ProfileUpdateRequest(BaseModel):
     name: str
-
-class PasswordUpdateRequest(BaseModel):
-    current_password: str
-    new_password: str
-    confirm_password: str
 
 @router.get("/profile", response_model=ProfileResponse)
 async def get_profile(
@@ -95,56 +89,23 @@ async def update_profile(
         created_at=user.created_at.isoformat()
     )
 
-@router.patch("/password")
-async def update_password(
-    req: PasswordUpdateRequest,
-    token: UserTokenPayload = Depends(verify_token),
-    session: AsyncSession = Depends(get_db)
-):
-    user_id = UUID(token.sub)
-    query = select(ExpertUserORM).where(ExpertUserORM.id == user_id)
-    result = await session.execute(query)
-    user = result.scalar_one_or_none()
-    
-    if not user:
-        raise HTTPException(
-            status_code=status.HTTP_404_NOT_FOUND,
-            detail="사용자를 찾을 수 없습니다."
-        )
-        
-    if not user.hashed_password or not verify_password(req.current_password, user.hashed_password):
-        raise HTTPException(
-            status_code=status.HTTP_400_BAD_REQUEST,
-            detail="현재 비밀번호가 올바르지 않습니다."
-        )
-        
-    user.hashed_password = hash_password(req.new_password)
-    await session.commit()
-    return {"message": "비밀번호가 변경되었습니다"}
-
 @router.delete("/withdraw")
 async def withdraw(
-    req: PasswordUpdateRequest,  # Frontend sends PasswordUpdateRequest on delete/withdraw too
     token: UserTokenPayload = Depends(verify_token),
     session: AsyncSession = Depends(get_db)
 ):
+    # 소셜 전용 가입이므로 비밀번호가 없다 — 인증 토큰만으로 탈퇴 처리한다.
     user_id = UUID(token.sub)
     query = select(ExpertUserORM).where(ExpertUserORM.id == user_id)
     result = await session.execute(query)
     user = result.scalar_one_or_none()
-    
+
     if not user:
         raise HTTPException(
             status_code=status.HTTP_404_NOT_FOUND,
             detail="사용자를 찾을 수 없습니다."
         )
-        
-    if not user.hashed_password or not verify_password(req.current_password, user.hashed_password):
-        raise HTTPException(
-            status_code=status.HTTP_400_BAD_REQUEST,
-            detail="비밀번호가 올바르지 않습니다."
-        )
-        
+
     stmt = delete(ExpertUserORM).where(ExpertUserORM.id == user_id)
     await session.execute(stmt)
     await session.commit()

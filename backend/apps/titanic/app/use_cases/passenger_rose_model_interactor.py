@@ -1,12 +1,8 @@
 from __future__ import annotations
 
+from collections.abc import Callable
 from typing import Any
 
-from titanic.adapter.inbound.api.schemas.passenger_rose_model_schema import RoseModelSchema
-from titanic.adapter.outbound.orm.passenger_rose_model_strategies import (
-    RandomForestStrategy,
-    build_all_strategies,
-)
 from titanic.app.dtos.passenger_rose_model_dto import RoseModelQuery, RoseModelResponse
 from titanic.app.ports.input.passenger_rose_model_use_case import RoseModelUseCase, SurvivalModelStrategy
 
@@ -16,10 +12,12 @@ class RoseModelInteractor(RoseModelUseCase):
     def __init__(
         self,
         repository: Any,
-        strategy: SurvivalModelStrategy | None = None,
+        build_strategies: Callable[[], dict[str, type[SurvivalModelStrategy]]],
+        strategy: SurvivalModelStrategy,
     ) -> None:
         self.repository = repository
-        self._strategy: SurvivalModelStrategy = strategy or RandomForestStrategy()
+        self._build_strategies = build_strategies
+        self._strategy: SurvivalModelStrategy = strategy
 
     # ── Strategy Pattern ────────────────────────────────────────────────────────
 
@@ -32,7 +30,7 @@ class RoseModelInteractor(RoseModelUseCase):
             "current_description": self._strategy.description,
             "available_strategies": [
                 {"rank": i + 1, "key": key, "name": cls().name, "description": cls().description}
-                for i, (key, cls) in enumerate(build_all_strategies().items())
+                for i, (key, cls) in enumerate(self._build_strategies().items())
             ],
         }
 
@@ -55,11 +53,8 @@ class RoseModelInteractor(RoseModelUseCase):
 
     # ── Other Use Cases ─────────────────────────────────────────────────────────
 
-    async def introduce_myself(self, schema: RoseModelSchema) -> RoseModelResponse:
-        return await self.repository.introduce_myself(RoseModelQuery(
-            id=schema.id,
-            name=schema.name,
-        ))
+    async def introduce_myself(self, query: RoseModelQuery) -> RoseModelResponse:
+        return await self.repository.introduce_myself(query)
 
 
 def _extract_features(data: dict[str, Any]) -> list[float]:

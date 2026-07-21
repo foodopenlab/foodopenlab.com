@@ -2,7 +2,7 @@ from uuid import UUID
 from datetime import datetime
 from sqlalchemy import String, ForeignKey, DateTime
 from sqlalchemy.orm import Mapped, mapped_column
-from mfds_user.adapter.outbound.orm.user_orm import UserORM
+from matrix.orm.user_orm import UserORM
 
 class AdminORM(UserORM):
     __tablename__ = "admins"

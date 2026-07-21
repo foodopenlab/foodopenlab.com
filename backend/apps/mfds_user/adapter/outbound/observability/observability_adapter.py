@@ -6,9 +6,9 @@ from sqlalchemy import select
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from mfds_user.app.ports.output.observability_ports import SearchLoggerPort
-from mfds_admin.adapter.outbound.orm.search_log_orm import SearchLogORM
+from matrix.orm.search_log_orm import SearchLogORM
 from mfds_user.adapter.outbound.orm.anonymous_orm import AnonymousORM
-from mfds_user.adapter.outbound.orm.expert_user_orm import ExpertUserORM
+from matrix.orm.expert_user_orm import ExpertUserORM
 
 logger = logging.getLogger(__name__)
 

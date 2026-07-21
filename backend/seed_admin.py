@@ -21,7 +21,7 @@ for _path in (_CORE_DIR, _APPS_DIR, _BACKEND_DIR):
 from sqlalchemy import select
 from matrix.grid_oracle_database_manager import AsyncSessionLocal, dispose_engine
 from mfds_admin.adapter.outbound.orm.admin_orm import AdminORM
-from mfds_user.app.services.security import hash_password
+from matrix.grid_cypher_password_manager import hash_password
 
 logger = logging.getLogger(__name__)
 

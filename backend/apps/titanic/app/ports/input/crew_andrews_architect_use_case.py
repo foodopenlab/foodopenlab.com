@@ -5,8 +5,7 @@ from typing import Any
 
 import pandas as pd
 
-from titanic.adapter.inbound.api.schemas.crew_andrews_architect_schema import AndrewsArchitectSchema
-from titanic.app.dtos.crew_andrews_architect_dto import AndrewsArchitectResponse
+from titanic.app.dtos.crew_andrews_architect_dto import AndrewsArchitectQuery, AndrewsArchitectResponse
 
 
 class AndrewsArchitectUseCase(ABC):
@@ -35,6 +34,6 @@ class AndrewsArchitectUseCase(ABC):
         pass
 
     @abstractmethod
-    async def introduce_myself(self, schema: AndrewsArchitectSchema) -> AndrewsArchitectResponse:
+    async def introduce_myself(self, query: AndrewsArchitectQuery) -> AndrewsArchitectResponse:
         '''앤드류 아키텍트의 자기소개 메소드'''
         pass

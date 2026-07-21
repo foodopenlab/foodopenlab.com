@@ -5,8 +5,8 @@ from datetime import datetime
 from sqlalchemy import select
 from sqlalchemy.ext.asyncio import AsyncSession
 
-from mfds_admin.adapter.outbound.orm.expert_whitelist_orm import ExpertWhitelistORM
-from mfds_user.adapter.outbound.orm.expert_user_orm import ExpertUserORM
+from matrix.orm.expert_whitelist_orm import ExpertWhitelistORM
+from matrix.orm.expert_user_orm import ExpertUserORM
 from mfds_user.app.dtos.oauth_dto import OAuthProfile
 from mfds_user.app.ports.output.oauth_user_repository import OAuthUserRepository
 from mfds_user.domain.entities.user_entity import User

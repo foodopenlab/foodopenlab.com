@@ -7,9 +7,9 @@ from sqlalchemy.ext.asyncio import AsyncSession
 from mfds_user.app.ports.output.chat_repository import ChatRepository
 from mfds_user.domain.entities.agent_message_entity import AgentMessage
 from mfds_user.domain.value_objects.query_pattern_vo import QueryPattern
-from mfds_user.adapter.outbound.orm.user_orm import UserORM
+from matrix.orm.user_orm import UserORM
 from mfds_user.adapter.outbound.orm.agent_session_orm import AgentSessionORM
-from mfds_user.adapter.outbound.orm.agent_message_orm import AgentMessageORM
+from matrix.orm.agent_message_orm import AgentMessageORM
 from mfds_user.adapter.outbound.orm.agent_message_sources_orm import AgentMessageSourceORM
 from mfds_user.adapter.outbound.orm.satisfaction_feedback_orm import SatisfactionFeedbackORM
 from mfds_user.adapter.outbound.orm.expert_feedback_orm import ExpertFeedbackORM

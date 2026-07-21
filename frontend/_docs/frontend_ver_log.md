@@ -1,5 +1,43 @@
 # Frontend Version Log
 
+## [v0.1.18] - 2026-07-21
+
+### Added
+- **보안 응답 헤더**(`next.config.mjs` `headers()`) — 전 경로에 `X-Content-Type-Options: nosniff`, `X-Frame-Options: DENY`, `Referrer-Policy: strict-origin-when-cross-origin`, `Permissions-Policy: camera=(), microphone=(), geolocation=()`, `Strict-Transport-Security: max-age=63072000; includeSubDomains; preload` 부여.
+  - **CSP는 `Content-Security-Policy-Report-Only`로 시작**(차단 없이 콘솔 경고만) — Next 인라인 부트스트랩·폰트/이미지·구글 OAuth 이동·api 호출을 안 깨게 `script-src 'unsafe-inline' 'unsafe-eval'`, `connect-src 'self' https://api.foodopenlab.com`, `frame-ancestors 'none'` 등으로 구성. 위반을 콘솔로 관찰해 조인 뒤 enforce(`Content-Security-Policy`)로 승격 예정.
+
+### Changed
+- **`X-Powered-By: Next.js` 노출 제거** — `poweredByHeader: false`.
+
+### Notes
+- 검증: 재시작 후 라이브 응답에 6개 헤더 적용·`x-powered-by` 부재 확인. 백엔드 v0.4.1과 짝.
+
+## [v0.1.17] - 2026-07-21
+
+### Changed
+- **어드민 로그인 페이지를 구글 로그인으로 전환** `app/admin/login/page.tsx` — 이메일/비밀번호 폼(`/api/admin/login` POST) 제거, "Google 계정으로 로그인" 버튼으로 교체. OAuth state 쿠키가 백엔드 도메인에 설정돼야 하므로 `${NEXT_PUBLIC_API_URL}/admin/auth/google/login`으로 top-level 이동. `?error=forbidden|state|config|oauth` 안내 메시지 처리.
+
+### Added
+- **어드민 구글 콜백 페이지** `app/admin/auth/callback/page.tsx` — 백엔드 콜백이 전달한 `#access_token` fragment를 읽어 `setAdminToken` 저장 후 `/admin`으로 이동(유저 `app/auth/callback`과 동일 패턴). 실패 시 `/admin/login?error=oauth`.
+
+### Notes
+- 백엔드 v0.4.0(어드민 구글 RBAC 로그인)과 짝. `NEXT_PUBLIC_API_URL`이 `https://api.foodopenlab.com`으로 설정돼 있어야 함(state 쿠키·콜백 동일 도메인). 검증: 변경 파일 `tsc --noEmit` 타입 에러 없음.
+
+## [v0.1.16] - 2026-07-21
+
+### Removed
+- **로컬(이메일/비밀번호) 회원가입·로그인 UI 제거 — 소셜(OAuth)만 유지.** 백엔드가 로컬 인증을 폐지(backend v0.3.0)한 데 맞춰 정리:
+  - `app/signup/page.tsx` — 이메일/비밀번호/이름 폼·`auth/signup` 호출·클라이언트 검증·"가입 유형" 라디오·비회원 안내 패널 제거. **소셜 3종(카카오·네이버·Google) 버튼만 남긴 페이지로 재작성.** "모든 회원은 일반회원으로 시작, 관리자 승인 후 전문가 전환" 안내 문구 추가.
+  - `app/login/page.tsx` — `/api/auth/login` 호출·이메일/비밀번호 폼·"또는 이메일로 로그인" 구분선 제거. 소셜 버튼 + `oauth_error` 콜백 안내만 유지. `CardDescription`을 "소셜 계정으로 로그인하세요."로 수정.
+  - `app/mypage/password/page.tsx` 및 전용 컴포넌트 `components/mypage/password-strength-check.tsx` **파일 삭제** — 소셜 계정은 비밀번호가 없어 무의미. `components/mypage/sidebar.tsx`의 "비밀번호 변경" 메뉴 항목·미사용 `Lock` import 제거.
+
+### Changed
+- **`app/mypage/withdraw/page.tsx`를 토큰 전용 탈퇴로 변경** — 비밀번호 입력 필드·`currentPassword`/`showPassword` state·요청 바디의 password 3필드(`current_password`/`new_password`/`confirm_password`) 제거. 이제 `Authorization` 헤더만으로 `DELETE /api/mypage/withdraw` 호출. 동의 체크박스만으로 제출 활성화. 미사용 `Input`/`Eye`/`EyeOff` import 정리, 하단 안내 문구 수정.
+
+### Notes
+- 프록시 라우트(`app/api/auth/[...path]`, `app/api/mypage/[...path]`)는 catch-all이라 수정 불필요.
+- 검증: 컨테이너 내 `tsc --noEmit` — 변경/생성 파일(signup·login·withdraw·sidebar) 타입 에러 없음. `.next/types/app/mypage/password/*`의 잔여 에러는 삭제된 페이지의 stale 생성 캐시로 다음 빌드 시 소멸(기존 `admin/whitelist`와 동일 패턴).
+
 ## [v0.1.15] - 2026-07-20
 
 ### Removed

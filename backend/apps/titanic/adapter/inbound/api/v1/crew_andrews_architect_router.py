@@ -2,7 +2,7 @@ from fastapi import APIRouter, Depends
 
 from titanic.adapter.inbound.api.schemas.crew_andrews_architect_schema import AndrewsArchitectSchema
 from titanic.app.ports.input.crew_andrews_architect_use_case import AndrewsArchitectUseCase
-from titanic.app.dtos.crew_andrews_architect_dto import AndrewsArchitectResponse
+from titanic.app.dtos.crew_andrews_architect_dto import AndrewsArchitectQuery, AndrewsArchitectResponse
 from titanic.dependencies.crew_andrews_architect_provider import get_andrews_architect_use_case
 '''
 토마스 앤드류스 (Thomas Andrews)
@@ -17,7 +17,7 @@ async def introduce_myself(
     andrews: AndrewsArchitectUseCase = Depends(get_andrews_architect_use_case),
 ) -> AndrewsArchitectResponse:
     return await andrews.introduce_myself(
-        AndrewsArchitectSchema(
+        AndrewsArchitectQuery(
             id=2,
             name="토마스 앤드류스 (Thomas Andrews)",
         )

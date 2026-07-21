@@ -110,7 +110,10 @@ result = await asyncio.to_thread(use_case.analyze_intent, question)
 
 ---
 
-## Star Topology — Hub & Spoke Architecture
+## Star Topology (Star-Craft) — Hub & Spoke Architecture
+
+> **Hub 앱 = `apps/ontology/`.** "Star-Craft"는 이 토폴로지/파이프라인의 **코드명**이며 앱 이름이 아니다. `apps/star_craft/`는 존재하지 않는다.
+> 근거(3개 SSOT 일치): master [`../../CLAUDE.md`](../../CLAUDE.md) §11 · `apps/ontology/_docs/star-craft-pipeline.md` frontmatter(`type: hub, domain: ontology`) · `apps/braindead/_docs/rule.md`("온톨로지 버스 Ontology Hub: `apps/ontology`").
 
 ### 개념
 
@@ -119,49 +122,52 @@ result = await asyncio.to_thread(use_case.analyze_intent, question)
 복잡한 비선형 앱 간 연결이 깨지지 않도록 의존성 규칙을 **코드·문서 양쪽에서 동시에 강제**한다.
 
 ```
-         [mfds_user]   [mfds_admin]
-              ↑              ↑
-[titanic] → [star_craft HUB] ← [siliconvalley]
-              ↓              ↓
-        [imitation_game]  [inception]
-                    ↓
-             [social_network]
+        [mfds_user]   [mfds_admin]
+             ↑              ↑
+[titanic] → [ontology HUB] ← [siliconvalley]
+                  ↑
+             [braindead]
+
+계획됨(미구현): imitation_game · inception · social_network
 ```
 
-### Hub — `apps/star_craft/`
+### Hub — `apps/ontology/`
 
-- **역할:** 지식 교차점, 온톨로지 상위 개념, 컨텍스트 라우팅, 전역 인덱스/상태 관리
-- **허용:** `star_craft` → `{any spoke}` (Hub가 Spoke를 알고 오케스트레이션)
-- **허용:** `{any spoke}` → `star_craft` (Spoke가 Hub에 등록·위임)
+- **역할:** 지식 교차점, 온톨로지 상위 개념, 컨텍스트 라우팅, 전역 인덱스/상태 관리 (전사 데이터 흐름·엔티티 관계 버스)
+- **허용:** `ontology` → `{any spoke}` (Hub가 Spoke를 알고 오케스트레이션)
+- **허용:** `{any spoke}` → `ontology` (Spoke가 Hub에 등록·위임)
 - **금지:** `{spoke_A}` → `{spoke_B}` 직접 참조 — 반드시 Hub 경유
 
 ### Spokes — 나머지 apps
 
-| Spoke | 도메인 |
-|-------|--------|
-| `titanic` | ML 학습/데모 |
-| `siliconvalley` | Piper 크루 |
-| `mfds_user` | MFDS 사용자 |
-| `mfds_admin` | MFDS 관리자 |
-| `imitation_game` | 이미테이션 게임 |
-| `inception` | 인셉션 |
-| `social_network` | 소셜 네트워크 |
+| Spoke | 도메인 | 상태 |
+|-------|--------|------|
+| `mfds_user` | MFDS 사용자 | 구현됨 |
+| `mfds_admin` | MFDS 관리자 | 구현됨 |
+| `braindead` | 메시징 채널 (Email·Telegram·Discord) | 구현됨 |
+| `titanic` | ML 학습/데모 | 구현됨 |
+| `siliconvalley` | Piper 크루 | 구현됨 |
+| `imitation_game` | 이미테이션 게임 | 계획됨 |
+| `inception` | 인셉션 | 계획됨 |
+| `social_network` | 소셜 네트워크 | 계획됨 |
+
+> `apps/sample`(프랙탈 스캐폴드 템플릿)·`apps/adapters`(`db_health_adapter`)는 BC 스포크가 아니다.
 
 ### 하네스 의존성 규칙 (Non-Negotiable)
 
 ```
-허용: star_craft  → {any spoke}     # Hub orchestrates
-허용: {any spoke} → star_craft      # Spoke registers to Hub
+허용: ontology   → {any spoke}     # Hub orchestrates
+허용: {any spoke} → ontology        # Spoke registers to Hub
 금지: {spoke_A}   → {spoke_B}       # Spoke↔Spoke 직접 참조 금지
-금지: star_craft 내 순환 참조        # Hub 자체 circular import 금지
+금지: ontology 내 순환 참조          # Hub 자체 circular import 금지
 ```
 
 위반 즉시 탐지 (CI 또는 수동):
 
 ```bash
 # spoke→spoke 직접 참조 탐지 (예시)
-grep -r "from titanic"       apps/siliconvalley/
-grep -r "from siliconvalley" apps/titanic/
+grep -rE "(from|import) +mfds_admin" apps/mfds_user/
+grep -rE "(from|import) +mfds_user"  apps/mfds_admin/
 ```
 
 ### MD 온톨로지 메타데이터 (Frontmatter 규칙)
@@ -171,14 +177,14 @@ grep -r "from siliconvalley" apps/titanic/
 ```yaml
 ---
 type: hub          # hub | spoke
-domain: star_craft # 앱 이름 (spoke는 자신의 도메인명)
-links:             # 연결 노드 (spoke는 star_craft만 기재)
-  - star_craft
+domain: ontology   # 앱 이름 (hub는 ontology, spoke는 자신의 도메인명)
+links:             # 연결 노드 (spoke는 ontology만 기재)
+  - ontology
 ---
 ```
 
-- `type: hub` → `star_craft` 전용
-- `type: spoke` → `links`에 `star_craft` 반드시 포함
+- `type: hub` → `ontology` 전용
+- `type: spoke` → `links`에 `ontology` 반드시 포함
 - Spoke MD에서 타 Spoke를 `links`에 직접 기재 금지
 
 ### Harness Validation 체크리스트
@@ -191,6 +197,7 @@ links:             # 연결 노드 (spoke는 star_craft만 기재)
 | 4 | Hub 내 순환 참조 | 즉시 리젝 |
 
 > 자동화 스크립트: `backend/scripts/validate-harness.py` (추후 구현)
+> **현재 알려진 위반(#1):** `mfds_user ↔ mfds_admin` 양방향 직접 참조 — 화이트리스트 ORM·`security.verify_password` 공유. Hub(`ontology`) 경유 또는 공유 커널(`core/`)로 해소 필요. `ontology → mfds_user`(law_chunk RAG)는 Hub→Spoke라 위상상 허용이나, 포트 대신 ORM 내부를 직접 참조하는 결합은 개선 여지.
 
 ---
 

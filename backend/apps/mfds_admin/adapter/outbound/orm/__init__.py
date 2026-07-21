@@ -1,7 +1,7 @@
 from mfds_admin.adapter.outbound.orm.admin_orm import AdminORM
-from mfds_admin.adapter.outbound.orm.expert_whitelist_orm import ExpertWhitelistORM
+from matrix.orm.expert_whitelist_orm import ExpertWhitelistORM
 from mfds_admin.adapter.outbound.orm.api_usage_log_orm import ApiUsageLogORM
-from mfds_admin.adapter.outbound.orm.search_log_orm import SearchLogORM
+from matrix.orm.search_log_orm import SearchLogORM
 
 __all__ = [
     "AdminORM",

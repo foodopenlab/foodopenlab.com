@@ -4,11 +4,10 @@ import { useState } from "react"
 import { useRouter } from "next/navigation"
 import { useMyPageAuth } from "@/hooks/use-mypage-auth"
 import { Button } from "@/components/ui/button"
-import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
 import { Checkbox } from "@/components/ui/checkbox"
 import { Card, CardContent } from "@/components/ui/card"
-import { AlertTriangle, Eye, EyeOff, Lock, Trash2 } from "lucide-react"
+import { AlertTriangle, Lock, Trash2 } from "lucide-react"
 import { useToast } from "@/hooks/use-toast"
 import { Spinner } from "@/components/ui/spinner"
 import { Skeleton } from "@/components/ui/skeleton"
@@ -27,8 +26,6 @@ export default function WithdrawalPage() {
   const router = useRouter()
   const { toast } = useToast()
 
-  const [currentPassword, setCurrentPassword] = useState("")
-  const [showPassword, setShowPassword] = useState(false)
   const [isChecked, setIsChecked] = useState(false)
 
   // API states
@@ -37,35 +34,24 @@ export default function WithdrawalPage() {
   const [isDialogOpen, setIsDialogOpen] = useState(false)
 
   const handleWithdrawal = async () => {
-    if (!currentPassword) {
-      setError("비밀번호를 입력해 주세요.")
-      setIsDialogOpen(false)
-      return
-    }
-
     setIsLoading(true)
     setError(null)
     setIsDialogOpen(false)
 
     try {
+      // 소셜 전용 가입이라 비밀번호가 없다 — 인증 토큰만으로 탈퇴한다.
       const res = await fetch("/api/mypage/withdraw", {
         method: "DELETE",
         headers: {
-          "Content-Type": "application/json",
           Authorization: `Bearer ${token}`,
           Accept: "application/json",
         },
-        body: JSON.stringify({
-          current_password: currentPassword,
-          new_password: currentPassword, // Reusing Password Schema on backend
-          confirm_password: currentPassword,
-        }),
       })
 
       const data = await res.json().catch(() => null)
 
       if (!res.ok) {
-        setError(data?.detail || "비밀번호가 올바르지 않습니다.")
+        setError(data?.detail || "회원 탈퇴 처리에 실패했습니다.")
         return
       }
 
@@ -138,32 +124,6 @@ export default function WithdrawalPage() {
             </div>
           )}
 
-          {/* Password Re-verification */}
-          <div className="space-y-2">
-            <Label htmlFor="withdrawal-password">비밀번호 확인</Label>
-            <div className="relative">
-              <Input
-                id="withdrawal-password"
-                type={showPassword ? "text" : "password"}
-                value={currentPassword}
-                onChange={(e) => {
-                  setCurrentPassword(e.target.value)
-                  setError(null)
-                }}
-                disabled={isLoading}
-                placeholder="본인 확인을 위한 비밀번호를 입력해 주세요"
-                className="pr-10 border-border bg-input"
-              />
-              <button
-                type="button"
-                onClick={() => setShowPassword(!showPassword)}
-                className="absolute right-3 top-1/2 -translate-y-1/2 text-muted-foreground hover:text-foreground"
-              >
-                {showPassword ? <EyeOff className="h-4 w-4" /> : <Eye className="h-4 w-4" />}
-              </button>
-            </div>
-          </div>
-
           {/* Consent Checkbox */}
           <div className="flex items-start space-x-2.5 pt-1">
             <Checkbox
@@ -186,7 +146,7 @@ export default function WithdrawalPage() {
               <DialogTrigger asChild>
                 <Button
                   type="button"
-                  disabled={!isChecked || !currentPassword || isLoading}
+                  disabled={!isChecked || isLoading}
                   className="w-full h-11 bg-destructive text-destructive-foreground hover:bg-destructive/90 shadow-sm"
                 >
                   {isLoading ? (
@@ -235,7 +195,7 @@ export default function WithdrawalPage() {
           {/* Cryptography notice */}
           <div className="flex items-center gap-1.5 text-[10px] text-muted-foreground justify-center">
             <Lock className="h-3 w-3" />
-            <span>비밀번호 검증을 위해 256-bit 보안 프로토콜을 통과합니다.</span>
+            <span>회원 탈퇴는 256-bit 보안 프로토콜의 인증 절차를 거쳐 처리됩니다.</span>
           </div>
 
         </CardContent>

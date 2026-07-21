@@ -5,7 +5,7 @@ from fastapi.responses import StreamingResponse
 
 from titanic.adapter.inbound.api.schemas.crew_hartley_violin_schema import HartleyViolinSchema
 from titanic.app.ports.input.crew_hartley_violin_use_case import HartleyViolinUseCase
-from titanic.app.dtos.crew_hartley_violin_dto import HartleyViolinResponse
+from titanic.app.dtos.crew_hartley_violin_dto import HartleyViolinQuery, HartleyViolinResponse
 from titanic.dependencies.crew_hartley_violin_provider import get_hartley_violin_use_case
 
 '''
@@ -20,7 +20,7 @@ async def introduce_myself(
     hartley: HartleyViolinUseCase = Depends(get_hartley_violin_use_case),
 ) -> HartleyViolinResponse:
     return await hartley.introduce_myself(
-        HartleyViolinSchema(
+        HartleyViolinQuery(
             id=3,
             name="월리스 하틀리 (Wallace Hartley)",
         )

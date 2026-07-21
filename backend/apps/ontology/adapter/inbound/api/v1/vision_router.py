@@ -12,7 +12,7 @@ from ontology.adapter.inbound.api.schemas.vision_schema import (
     VisionSchema,
 )
 from ontology.app.dtos.face_recognition_dto import FaceRecognizeQuery
-from ontology.app.dtos.vision_dto import VisionResponse
+from ontology.app.dtos.vision_dto import VisionQuery, VisionResponse
 from ontology.app.ports.input.face_recognition_use_case import IFaceRecognitionUseCase
 from ontology.app.ports.input.vision_use_case import IVisionUseCase
 from ontology.dependencies.face_recognition_provider import get_face_recognition_use_case
@@ -30,7 +30,7 @@ _DEFAULT_WEIGHTS = (
 async def introduce_myself(
     use_case: IVisionUseCase = Depends(get_vision_use_case),
 ) -> VisionResponse:
-    return await use_case.introduce_myself(VisionSchema(id=0, name="Vision"))
+    return await use_case.introduce_myself(VisionQuery(id=0, name="Vision"))
 
 
 @router.post("/vision/images", response_model=VisionImageUploadResponse, status_code=status.HTTP_201_CREATED)

@@ -3,8 +3,7 @@ from __future__ import annotations
 from abc import ABC, abstractmethod
 from typing import Any
 
-from titanic.adapter.inbound.api.schemas.passenger_rose_model_schema import RoseModelSchema
-from titanic.app.dtos.passenger_rose_model_dto import RoseModelResponse
+from titanic.app.dtos.passenger_rose_model_dto import RoseModelQuery, RoseModelResponse
 
 
 class RoseModelUseCase(ABC):
@@ -22,7 +21,7 @@ class RoseModelUseCase(ABC):
         """현재 전략으로 승객 생존 예측 (fit() 선행 필요)"""
 
     @abstractmethod
-    async def introduce_myself(self, schema: RoseModelSchema) -> RoseModelResponse:
+    async def introduce_myself(self, query: RoseModelQuery) -> RoseModelResponse:
         """로즈 모델의 자기소개"""
 
 

@@ -1,8 +1,8 @@
+from dataclasses import replace
 from typing import List
 from mfds_admin.app.ports.input.whitelist_use_case import WhitelistUseCase
 from mfds_admin.app.ports.output.whitelist_repository import WhitelistRepositoryPort
 from mfds_admin.app.dtos.whitelist_dto import AddWhitelistCommand, WhitelistEntryDTO
-from mfds_admin.adapter.outbound.orm.expert_whitelist_orm import ExpertWhitelistORM
 
 class WhitelistInteractor(WhitelistUseCase):
     def __init__(self, whitelist_repository: WhitelistRepositoryPort) -> None:
@@ -20,34 +20,11 @@ class WhitelistInteractor(WhitelistUseCase):
         if not command.added_by:
             raise ValueError("등록자를 지정해야 합니다.")
 
-        entry = ExpertWhitelistORM(
-            email=email,
-            invited_name=command.invited_name,
-            role_desc=command.role_desc,
-            added_by=command.added_by
-        )
-        saved = await self._repo.save(entry)
-
-        return WhitelistEntryDTO(
-            email=saved.email,
-            invited_name=saved.invited_name,
-            role_desc=saved.role_desc,
-            added_by=saved.added_by,
-            added_at=saved.added_at
-        )
+        # ORM 생성은 어댑터(repo)의 책임 — 정규화한 이메일만 넘긴다.
+        return await self._repo.save(replace(command, email=email))
 
     async def list_whitelist(self) -> List[WhitelistEntryDTO]:
-        entries = await self._repo.list_all()
-        return [
-            WhitelistEntryDTO(
-                email=e.email,
-                invited_name=e.invited_name,
-                role_desc=e.role_desc,
-                added_by=e.added_by,
-                added_at=e.added_at
-            )
-            for e in entries
-        ]
+        return await self._repo.list_all()
 
     async def remove_from_whitelist(self, email: str) -> None:
         normalized = email.strip()

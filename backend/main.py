@@ -76,13 +76,13 @@ from fastapi import Depends, FastAPI, HTTPException, Request
 from fastapi.encoders import jsonable_encoder
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.openapi.docs import get_redoc_html, get_swagger_ui_html
-from fastapi.responses import HTMLResponse, JSONResponse
-from fastapi.security import HTTPBasic, HTTPBasicCredentials
+from fastapi.responses import HTMLResponse, JSONResponse, RedirectResponse
 from pydantic import BaseModel
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from adapters.db_health_adapter import DbHealthAdapter
 from matrix.grid_oracle_database_manager import dispose_engine, get_db, init_engine
+from matrix.grid_admin_guard_manager import decode_admin_jwt
 from mfds_user.adapter.inbound.api import user_router
 from mfds_admin.adapter.inbound.api import admin_router
 from mfds_user.adapter.outbound.cache.lifecycle import (
@@ -308,6 +308,36 @@ app.add_middleware(
     allow_headers=["*"],
 )
 
+
+# --- 보안 응답 헤더 (클릭재킹·MIME 스니핑·Referrer·Permissions·CSP·HSTS) ---
+# 순수 JSON API는 CSP를 강하게(default-src 'none'), Swagger/ReDoc(/docs·/redoc)은
+# CDN·인라인 스크립트가 필요해 완화한다.
+_DOCS_CSP = (
+    "default-src 'self'; "
+    "img-src 'self' data: https://fastapi.tiangolo.com; "
+    "script-src 'self' 'unsafe-inline' https://cdn.jsdelivr.net; "
+    "style-src 'self' 'unsafe-inline' https://cdn.jsdelivr.net; "
+    "worker-src 'self' blob:; "
+    "frame-ancestors 'none'"
+)
+_API_CSP = "default-src 'none'; frame-ancestors 'none'; base-uri 'none'"
+
+
+@app.middleware("http")
+async def _security_headers(request: Request, call_next):
+    response = await call_next(request)
+    headers = response.headers
+    headers["X-Content-Type-Options"] = "nosniff"
+    headers["X-Frame-Options"] = "DENY"
+    headers["Referrer-Policy"] = "strict-origin-when-cross-origin"
+    headers["Permissions-Policy"] = "camera=(), microphone=(), geolocation=()"
+    headers["Strict-Transport-Security"] = "max-age=31536000; includeSubDomains"
+    path = request.url.path
+    is_docs = path.startswith("/docs") or path.startswith("/redoc")
+    headers["Content-Security-Policy"] = _DOCS_CSP if is_docs else _API_CSP
+    return response
+
+
 app.include_router(user_router)
 app.include_router(admin_router)
 app.include_router(titanic_router, prefix="/api")
@@ -316,42 +346,41 @@ app.include_router(braindead_router, prefix="/api")
 app.include_router(vision_router, prefix="/api")
 
 
-# --- Swagger/OpenAPI 문서 보호 (HTTP Basic · ADMIN_EMAIL/ADMIN_PASSWORD) ---
-# 기본 문서 라우트는 위에서 비활성화했고, 아래 인증 게이트를 통과한 요청에만 노출한다.
-_docs_basic = HTTPBasic()
+# --- Swagger/OpenAPI 문서 보호 (구글 세션 쿠키 · role=admin RBAC) ---
+# 기본 문서 라우트는 위에서 비활성화했고, admin_docs_session 쿠키(admin JWT)를 검증한다.
+# 쿠키가 없거나 무효면 구글 어드민 로그인으로 유도(콜백이 쿠키를 설정 후 /docs로 복귀).
+_DOCS_SESSION_COOKIE = "admin_docs_session"
 
 
-def _verify_docs_credentials(
-    credentials: Annotated[HTTPBasicCredentials, Depends(_docs_basic)],
-) -> str:
-    admin_user = (os.getenv("ADMIN_EMAIL") or "").strip()
-    admin_pass = os.getenv("ADMIN_PASSWORD") or ""
-    if not admin_user or not admin_pass:
-        raise HTTPException(status_code=503, detail="문서 인증 설정이 완료되지 않았습니다.")
-    # 타이밍 공격 방지를 위해 compare_digest 사용. 하나라도 어긋나면 401 + Basic 재요청.
-    user_ok = secrets.compare_digest(credentials.username.strip(), admin_user)
-    pass_ok = secrets.compare_digest(credentials.password, admin_pass)
-    if not (user_ok and pass_ok):
-        raise HTTPException(
-            status_code=401,
-            detail="인증이 필요합니다",
-            headers={"WWW-Authenticate": "Basic"},
-        )
-    return credentials.username
+def _docs_session_ok(request: Request) -> bool:
+    token = request.cookies.get(_DOCS_SESSION_COOKIE)
+    if not token:
+        return False
+    try:
+        decode_admin_jwt(token)
+        return True
+    except HTTPException:
+        return False
 
 
 @app.get("/openapi.json", include_in_schema=False)
-async def _protected_openapi(_: Annotated[str, Depends(_verify_docs_credentials)]) -> JSONResponse:
+async def _protected_openapi(request: Request):
+    if not _docs_session_ok(request):
+        raise HTTPException(status_code=401, detail="인증이 필요합니다")
     return JSONResponse(app.openapi())
 
 
 @app.get("/docs", include_in_schema=False)
-async def _protected_swagger(_: Annotated[str, Depends(_verify_docs_credentials)]) -> HTMLResponse:
+async def _protected_swagger(request: Request):
+    if not _docs_session_ok(request):
+        return RedirectResponse("/admin/auth/google/login?next=/docs", status_code=307)
     return get_swagger_ui_html(openapi_url="/openapi.json", title=f"{app.title} - Swagger UI")
 
 
 @app.get("/redoc", include_in_schema=False)
-async def _protected_redoc(_: Annotated[str, Depends(_verify_docs_credentials)]) -> HTMLResponse:
+async def _protected_redoc(request: Request):
+    if not _docs_session_ok(request):
+        return RedirectResponse("/admin/auth/google/login?next=/redoc", status_code=307)
     return get_redoc_html(openapi_url="/openapi.json", title=f"{app.title} - ReDoc")
 
 

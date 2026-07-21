@@ -3,8 +3,7 @@ from __future__ import annotations
 import logging
 from typing import Any
 
-from titanic.adapter.inbound.api.schemas.crew_smith_captain_schema import ChatSchema, SmithCaptainSchema
-from titanic.app.dtos.crew_smith_captain_dto import ChatResponse, SmithCaptainQuery, SmithCaptainResponse
+from titanic.app.dtos.crew_smith_captain_dto import ChatCommand, ChatResponse, SmithCaptainQuery, SmithCaptainResponse
 from titanic.app.ports.input.crew_andrews_architect_use_case import AndrewsArchitectUseCase
 from titanic.app.ports.input.crew_hartley_violin_use_case import HartleyViolinUseCase
 from titanic.app.ports.input.crew_lowe_boat_use_case import LoweBoatUseCase
@@ -43,13 +42,11 @@ class SmithCaptainInteractor(SmithCaptainUseCase):
         self.lowe = lowe
         self.hartley = hartley
 
-    async def introduce_myself(self, schema: SmithCaptainSchema) -> SmithCaptainResponse:
-        return await self.repository.introduce_myself(
-            SmithCaptainQuery(id=schema.id, name=schema.name)
-        )
+    async def introduce_myself(self, query: SmithCaptainQuery) -> SmithCaptainResponse:
+        return await self.repository.introduce_myself(query)
 
-    async def chat(self, schema: ChatSchema) -> ChatResponse:
-        user_messages = [m.text for m in schema.messages if m.role == "user" and m.text.strip()]
+    async def chat(self, command: ChatCommand) -> ChatResponse:
+        user_messages = [m.text for m in command.messages if m.role == "user" and m.text.strip()]
         message = user_messages[-1].strip() if user_messages else ""
 
         logger.info("[SmithCaptainInteractor] chat | message=%r", message)

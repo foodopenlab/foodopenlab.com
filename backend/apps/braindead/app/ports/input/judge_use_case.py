@@ -1,9 +1,8 @@
 from abc import ABC, abstractmethod
 
-from braindead.adapter.inbound.api.schemas.judge_schema import JudgeSchema
-from braindead.app.dtos.judge_dto import JudgeResponse
+from braindead.app.dtos.judge_dto import JudgeQuery, JudgeResponse
 
 
 class IJudgeUseCase(ABC):
     @abstractmethod
-    async def introduce_myself(self, schema: JudgeSchema) -> JudgeResponse: ...
+    async def introduce_myself(self, query: JudgeQuery) -> JudgeResponse: ...

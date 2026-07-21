@@ -5,8 +5,35 @@ import { resolveBackendOrigin } from "./lib/backend-origin.mjs"
 
 const projectRoot = dirname(fileURLToPath(import.meta.url))
 
+// CSP는 우리가 쓰는 리소스(Next 인라인 부트스트랩, 폰트/이미지, 구글 OAuth 이동, api 호출)를
+// 깨지 않도록 처음엔 Report-Only(차단 없이 콘솔 경고만)로 깔고, 위반을 보며 조인 뒤 enforce로 승격한다.
+const CONTENT_SECURITY_POLICY = [
+  "default-src 'self'",
+  "script-src 'self' 'unsafe-inline' 'unsafe-eval'",
+  "style-src 'self' 'unsafe-inline'",
+  "img-src 'self' data: blob: https:",
+  "font-src 'self' data:",
+  "connect-src 'self' https://api.foodopenlab.com",
+  "frame-ancestors 'none'",
+  "base-uri 'self'",
+  "form-action 'self' https://api.foodopenlab.com",
+].join("; ")
+
+const SECURITY_HEADERS = [
+  { key: "X-Content-Type-Options", value: "nosniff" },
+  { key: "X-Frame-Options", value: "DENY" },
+  { key: "Referrer-Policy", value: "strict-origin-when-cross-origin" },
+  { key: "Permissions-Policy", value: "camera=(), microphone=(), geolocation=()" },
+  { key: "Strict-Transport-Security", value: "max-age=63072000; includeSubDomains; preload" },
+  { key: "Content-Security-Policy-Report-Only", value: CONTENT_SECURITY_POLICY },
+]
+
 /** @type {import('next').NextConfig} */
 const nextConfig = {
+  poweredByHeader: false,
+  async headers() {
+    return [{ source: "/:path*", headers: SECURITY_HEADERS }]
+  },
   // 모노레포(com.foodopenlab) 안에서 Turbopack이 상위 폴더를 루트로 잡아
   // node_modules/next 를 못 찾는 패닉 방지.
   // 주의: outputFileTracingRoot 는 여기서 설정하지 않는다 — Vercel(Root Directory=frontend)이

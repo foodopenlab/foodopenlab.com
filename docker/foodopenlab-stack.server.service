@@ -1,0 +1,19 @@
+[Unit]
+Description=com.foodopenlab docker compose stack (server / Docker Hub image + cloudflared)
+Requires=docker.service
+After=docker.service network-online.target
+Wants=network-online.target
+
+[Service]
+Type=oneshot
+RemainAfterExit=yes
+# ▼▼ 새 서버의 실제 프로젝트 경로로 교체 ▼▼
+WorkingDirectory=/home/ubuntu/projects/com.foodopenlab
+# -p foodopenlab : compose 프로젝트명 고정 → 볼륨/네트워크가 foodopenlab_* 로 생성되어
+#                   기존 프로젝트와 확실히 분리된다.
+ExecStart=/usr/bin/docker compose -p foodopenlab -f docker-compose.server.yml up -d
+ExecStop=/usr/bin/docker compose -p foodopenlab -f docker-compose.server.yml stop
+ExecStartPre=/bin/sh -c 'for i in $(seq 1 30); do /usr/bin/docker info >/dev/null 2>&1 && exit 0; sleep 2; done; exit 1'
+
+[Install]
+WantedBy=multi-user.target

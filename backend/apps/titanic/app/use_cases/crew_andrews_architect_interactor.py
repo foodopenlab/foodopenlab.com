@@ -5,7 +5,6 @@ from typing import Any
 
 import pandas as pd
 
-from titanic.adapter.inbound.api.schemas.crew_andrews_architect_schema import AndrewsArchitectSchema
 from titanic.app.dtos.crew_andrews_architect_dto import AndrewsArchitectQuery, AndrewsArchitectResponse
 from titanic.app.ports.input.crew_andrews_architect_use_case import AndrewsArchitectUseCase
 from titanic.domain.value_objects.survival_predictors_vo import SurvivalPredictors
@@ -152,8 +151,5 @@ class AndrewsArchitectInteractor(AndrewsArchitectUseCase):
         )
         return await self.respond(message, context=context)
 
-    async def introduce_myself(self, schema: AndrewsArchitectSchema) -> AndrewsArchitectResponse:
-        return await self.repository.introduce_myself(AndrewsArchitectQuery(
-            id=schema.id,
-            name=schema.name,
-        ))
+    async def introduce_myself(self, query: AndrewsArchitectQuery) -> AndrewsArchitectResponse:
+        return await self.repository.introduce_myself(query)

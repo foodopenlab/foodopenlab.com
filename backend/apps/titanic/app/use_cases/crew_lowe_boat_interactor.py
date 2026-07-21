@@ -6,7 +6,6 @@ from typing import Any
 import numpy as np
 import pandas as pd
 
-from titanic.adapter.inbound.api.schemas.crew_lowe_boat_schema import LoweBoatSchema
 from titanic.app.dtos.crew_lowe_boat_dto import LoweBoatQuery, LoweBoatResponse
 from titanic.app.ports.input.crew_lowe_boat_use_case import LoweBoatUseCase
 
@@ -18,11 +17,8 @@ class LoweBoatInteractor(LoweBoatUseCase):
     def __init__(self, repository: Any) -> None:
         self.repository = repository
 
-    async def introduce_myself(self, schema: LoweBoatSchema) -> LoweBoatResponse:
-        return await self.repository.introduce_myself(LoweBoatQuery(
-            id=schema.id,
-            name=schema.name,
-        ))
+    async def introduce_myself(self, query: LoweBoatQuery) -> LoweBoatResponse:
+        return await self.repository.introduce_myself(query)
 
     def feature_engineering(
         self, train_set: pd.DataFrame,

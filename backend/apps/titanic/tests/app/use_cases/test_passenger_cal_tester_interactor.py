@@ -4,7 +4,7 @@ from unittest.mock import AsyncMock, MagicMock
 
 pytestmark = pytest.mark.asyncio
 
-from titanic.adapter.inbound.api.schemas.passenger_cal_tester_schema import CalTesterSchema
+from titanic.adapter.outbound.ml.survival_strategies import build_all_strategies
 from titanic.app.dtos.passenger_cal_tester_dto import CalTesterQuery, CalTesterResponse
 from titanic.app.use_cases.crew_lowe_boat_interactor import LoweBoatInteractor
 from titanic.app.use_cases.passenger_cal_tester_interactor import CalTesterInteractor
@@ -111,7 +111,7 @@ class TestTestModel:
         frame = _sample_train_frame()
         x_all, y_all = lowe.feature_engineering(frame)
 
-        jack = JackTrainerInteractor(repository=MagicMock())
+        jack = JackTrainerInteractor(repository=MagicMock(), build_strategies=build_all_strategies)
         trained = await jack.train_model(x_all, y_all)
 
         result = await interactor.test_model(trained)
@@ -122,11 +122,9 @@ class TestTestModel:
         assert result["ranking"][0]["name"] == result["champion"]["name"]
 
     async def test_introduce_myself(self, interactor, mock_repository):
-        schema = CalTesterSchema(id=7, name="Cal Hockley")
+        query = CalTesterQuery(id=7, name="Cal Hockley")
 
-        response = await interactor.introduce_myself(schema)
+        response = await interactor.introduce_myself(query)
 
-        mock_repository.introduce_myself.assert_called_once_with(
-            CalTesterQuery(id=7, name="Cal Hockley")
-        )
+        mock_repository.introduce_myself.assert_called_once_with(query)
         assert response == CalTesterResponse(id=7, name="Cal Hockley")

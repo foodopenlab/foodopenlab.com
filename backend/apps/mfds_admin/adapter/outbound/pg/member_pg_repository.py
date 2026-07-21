@@ -1,10 +1,10 @@
 from sqlalchemy import select
 from sqlalchemy.ext.asyncio import AsyncSession
 
-from mfds_admin.adapter.outbound.orm.expert_whitelist_orm import ExpertWhitelistORM
+from matrix.orm.expert_whitelist_orm import ExpertWhitelistORM
 from mfds_admin.app.dtos.member_dto import MemberDTO
 from mfds_admin.app.ports.output.member_repository import MemberRepositoryPort
-from mfds_user.adapter.outbound.orm.expert_user_orm import ExpertUserORM
+from matrix.orm.expert_user_orm import ExpertUserORM
 
 
 class MemberPgRepository(MemberRepositoryPort):

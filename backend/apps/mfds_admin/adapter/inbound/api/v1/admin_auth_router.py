@@ -6,6 +6,7 @@ from mfds_admin.adapter.inbound.api.schemas.admin_auth_schema import (
     AdminTokenResponseSchema
 )
 from mfds_admin.app.dtos.admin_auth_dto import AdminLoginCommand
+from mfds_admin.app.exceptions import AdminAuthError, AdminConfigError
 
 router = APIRouter(tags=["admin"])
 
@@ -23,8 +24,10 @@ async def admin_login(
             expires_in=res.expires_in,
             admin_name=res.admin_name
         )
-    except HTTPException:
-        raise
+    except AdminConfigError as e:
+        raise HTTPException(status_code=status.HTTP_503_SERVICE_UNAVAILABLE, detail=str(e))
+    except AdminAuthError as e:
+        raise HTTPException(status_code=status.HTTP_401_UNAUTHORIZED, detail=str(e))
     except Exception as e:
         raise HTTPException(status_code=status.HTTP_401_UNAUTHORIZED, detail=str(e))
 

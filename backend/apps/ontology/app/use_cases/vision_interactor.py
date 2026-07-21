@@ -1,6 +1,5 @@
 from pathlib import Path
 
-from ontology.adapter.inbound.api.schemas.vision_schema import VisionSchema
 from ontology.app.dtos.vision_dto import VisionQuery, VisionResponse, VisionUploadQuery, VisionUploadResult
 from ontology.app.ports.input.vision_use_case import IVisionUseCase
 from ontology.app.ports.output.vision_port import IVisionPort
@@ -12,8 +11,8 @@ class VisionInteractor(IVisionUseCase):
     def __init__(self, port: IVisionPort) -> None:
         self._port = port
 
-    async def introduce_myself(self, schema: VisionSchema) -> VisionResponse:
-        return await self._port.introduce_myself(VisionQuery(id=schema.id, name=schema.name))
+    async def introduce_myself(self, query: VisionQuery) -> VisionResponse:
+        return await self._port.introduce_myself(query)
 
     async def upload_image(self, filename: str, content_type: str, content: bytes) -> VisionUploadResult:
         if not content:

@@ -12,7 +12,6 @@ import matplotlib.pyplot as plt
 import pandas as pd
 import seaborn as sns
 
-from titanic.adapter.inbound.api.schemas.crew_hartley_violin_schema import HartleyViolinSchema
 from titanic.app.dtos.crew_hartley_violin_dto import HartleyViolinQuery, HartleyViolinResponse
 from titanic.app.ports.input.crew_hartley_violin_use_case import HartleyViolinUseCase
 from titanic.app.ports.input.crew_walter_roaster_use_case import WalterRoasterUseCase
@@ -40,13 +39,10 @@ class HartleyViolinInteractor(HartleyViolinUseCase):
         self.repository = repository
         self.walter = walter
 
-    async def introduce_myself(self, schema: HartleyViolinSchema) -> HartleyViolinResponse:
+    async def introduce_myself(self, query: HartleyViolinQuery) -> HartleyViolinResponse:
         '''하틀리 바이올린의 자기소개 인터렉트'''
 
-        return await self.repository.introduce_myself(HartleyViolinQuery(
-            id=schema.id,
-            name=schema.name,
-        ))
+        return await self.repository.introduce_myself(query)
 
     def _encode_cabin_deck(self, raw: object) -> int:
         if raw is None or (isinstance(raw, float) and pd.isna(raw)):

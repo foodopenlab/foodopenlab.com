@@ -6,8 +6,7 @@ import re
 from datetime import date
 
 from mfds_user.dependencies.auth_helper import verify_token, UserTokenPayload
-from mfds_admin.adapter.inbound.api.middlewares.admin_auth_middleware import verify_admin_token
-from mfds_admin.adapter.inbound.api.schemas.admin_auth_schema import AdminTokenPayloadSchema
+from matrix.grid_admin_guard_manager import verify_admin_jwt
 
 from mfds_user.app.ports.input.daily_report_use_case import DailyReportUseCase
 from mfds_user.dependencies.daily_report import get_daily_report_use_case
@@ -128,7 +127,7 @@ async def download_report(
 
 @router.post("/admin/reports/generate", response_model=SchedulerResultSchema)
 async def trigger_scheduler_batch(
-    admin: Annotated[AdminTokenPayloadSchema, Depends(verify_admin_token)],
+    _admin: Annotated[str, Depends(verify_admin_jwt)],
     use_case: ReportSchedulerUseCase = Depends(get_report_scheduler_use_case)
 ) -> SchedulerResultSchema:
     try:
@@ -145,7 +144,7 @@ async def trigger_scheduler_batch(
 
 @router.post("/admin/reports/regenerate", response_model=DailyReportSchema)
 async def regenerate_report_for_user_and_date(
-    admin: Annotated[AdminTokenPayloadSchema, Depends(verify_admin_token)],
+    _admin: Annotated[str, Depends(verify_admin_jwt)],
     expert_user_id: str = "",
     report_date: str = "",
     use_case: DailyReportUseCase = Depends(get_daily_report_use_case),

@@ -4,7 +4,6 @@ import asyncio
 import logging
 from typing import Any
 
-from titanic.adapter.inbound.api.schemas.passenger_cal_tester_schema import CalTesterSchema
 from titanic.app.dtos.passenger_cal_tester_dto import CalTesterQuery, CalTesterResponse
 from titanic.app.ports.input.passenger_cal_tester_use_case import CalTesterUseCase
 from titanic.app.ports.input.passenger_rose_model_use_case import SurvivalModelStrategy
@@ -73,9 +72,6 @@ class CalTesterInteractor(CalTesterUseCase):
         logger.info("[CalTesterInteractor] 모델 채점 시작")
         return await asyncio.to_thread(_score_trained_strategies, test_set)
 
-    async def introduce_myself(self, schema: CalTesterSchema) -> CalTesterResponse:
+    async def introduce_myself(self, query: CalTesterQuery) -> CalTesterResponse:
         '''칼 테스터의 자기소개 인터렉트'''
-        return await self.repository.introduce_myself(CalTesterQuery(
-            id=schema.id,
-            name=schema.name,
-        ))
+        return await self.repository.introduce_myself(query)

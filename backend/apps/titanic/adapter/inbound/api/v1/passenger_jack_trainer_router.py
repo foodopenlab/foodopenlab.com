@@ -2,7 +2,7 @@ from fastapi import APIRouter, Depends
 
 from titanic.adapter.inbound.api.schemas.passenger_jack_trainer_schema import JackTrainerSchema
 from titanic.app.ports.input.passenger_jack_trainer_use_case import JackTrainerUseCase
-from titanic.app.dtos.passenger_jack_trainer_dto import JackTrainerResponse
+from titanic.app.dtos.passenger_jack_trainer_dto import JackTrainerQuery, JackTrainerResponse
 from titanic.dependencies.passenger_jack_trainer_provider import get_jack_trainer_use_case
 
 '''
@@ -17,7 +17,7 @@ async def introduce_myself(
     jack: JackTrainerUseCase = Depends(get_jack_trainer_use_case),
 ) -> JackTrainerResponse:
     return await jack.introduce_myself(
-        JackTrainerSchema(
+        JackTrainerQuery(
             id=9,
             name="잭 도슨 (Jack Dawson)",
         )

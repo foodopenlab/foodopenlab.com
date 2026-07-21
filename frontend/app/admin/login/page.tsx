@@ -1,78 +1,40 @@
 "use client"
 
 import { useEffect, useState } from "react"
-import { useRouter } from "next/navigation"
-import { ShieldCheck, Eye, EyeOff } from "lucide-react"
+import { useRouter, useSearchParams } from "next/navigation"
+import { ShieldCheck } from "lucide-react"
 import { Button } from "@/components/ui/button"
-import { Input } from "@/components/ui/input"
-import { Label } from "@/components/ui/label"
 import { Spinner } from "@/components/ui/spinner"
-import { isAdminLoggedIn, setAdminDisplayName, setAdminToken } from "@/lib/admin/auth"
+import { isAdminLoggedIn } from "@/lib/admin/auth"
+
+// OAuth state 쿠키가 백엔드 도메인에 설정돼야 하므로 백엔드 절대 URL로 top-level 이동한다.
+function adminGoogleLoginUrl(): string {
+  const base = (process.env.NEXT_PUBLIC_API_URL ?? "").replace(/\/$/, "")
+  return `${base}/admin/auth/google/login`
+}
+
+const ERROR_MESSAGES: Record<string, string> = {
+  forbidden: "어드민 권한이 없는 구글 계정입니다.",
+  state: "인증 요청이 만료되었습니다. 다시 시도해 주세요.",
+  config: "어드민 구글 로그인 설정이 완료되지 않았습니다. 관리자에게 문의하세요.",
+  oauth: "구글 로그인에 실패했습니다. 다시 시도해 주세요.",
+}
 
 export default function AdminLoginPage() {
   const router = useRouter()
-  const [email, setEmail] = useState("")
-  const [password, setPassword] = useState("")
-  const [showPw, setShowPw] = useState(false)
+  const searchParams = useSearchParams()
   const [loading, setLoading] = useState(false)
-  const [error, setError] = useState<string | null>(null)
+
+  const errorCode = searchParams.get("error")
+  const error = errorCode ? (ERROR_MESSAGES[errorCode] ?? "로그인에 실패했습니다.") : null
 
   useEffect(() => {
     if (isAdminLoggedIn()) router.replace("/admin")
   }, [router])
 
-  const submit = async () => {
-    setError(null)
+  const signInWithGoogle = () => {
     setLoading(true)
-    try {
-      const res = await fetch("/api/admin/login", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ email: email.trim(), password }),
-      })
-      const data = (await res.json().catch(() => ({}))) as {
-        access_token?: string
-        admin_name?: string
-        detail?: string
-      }
-      if (!res.ok) {
-        if (res.status === 404) {
-          setError(
-            "백엔드 API를 찾을 수 없습니다. com.auditor(uvicorn 8000) 또는 Docker backend 컨테이너가 실행 중인지 확인하세요.",
-          )
-          return
-        }
-        if (res.status === 503 && typeof data.detail === "string") {
-          setError(data.detail)
-          return
-        }
-        setError(
-          typeof data.detail === "string"
-            ? data.detail
-            : res.status === 401
-              ? "이메일 또는 비밀번호가 올바르지 않습니다. com.auditor/.env 비밀번호를 바꿨다면 seed_admin 스크립트를 다시 실행했는지 확인하세요."
-              : `로그인 실패 (HTTP ${res.status})`,
-        )
-        return
-      }
-      if (!data.access_token) {
-        setError("로그인 응답이 올바르지 않습니다.")
-        return
-      }
-      setAdminToken(data.access_token)
-      if (data.admin_name) setAdminDisplayName(data.admin_name)
-      router.push("/admin")
-    } catch {
-      setError(
-        "백엔드에 연결할 수 없습니다. 프론트(localhost:3000)와 백엔드(8000)가 모두 실행 중인지 확인하세요.",
-      )
-    } finally {
-      setLoading(false)
-    }
-  }
-
-  const onKeyDown = (e: React.KeyboardEvent) => {
-    if (e.key === "Enter") void submit()
+    window.location.href = adminGoogleLoginUrl()
   }
 
   return (
@@ -83,53 +45,43 @@ export default function AdminLoginPage() {
           <h1 className="text-xl font-semibold text-foreground">HACCP Monitor</h1>
           <p className="text-sm text-muted-foreground">관리자 로그인</p>
         </div>
-        <div className="space-y-4" onKeyDown={onKeyDown}>
-          <div className="space-y-2">
-            <Label htmlFor="admin-email">이메일</Label>
-            <Input
-              id="admin-email"
-              type="email"
-              autoComplete="username"
-              placeholder="관리자 이메일"
-              value={email}
-              onChange={(e) => setEmail(e.target.value)}
-              disabled={loading}
-            />
-          </div>
-          <div className="space-y-2">
-            <Label htmlFor="admin-password">비밀번호</Label>
-            <div className="relative">
-              <Input
-                id="admin-password"
-                type={showPw ? "text" : "password"}
-                autoComplete="current-password"
-                placeholder="비밀번호"
-                value={password}
-                onChange={(e) => setPassword(e.target.value)}
-                disabled={loading}
-                className="pr-10"
+
+        <Button
+          type="button"
+          variant="outline"
+          className="h-12 w-full border-border bg-white text-gray-800 transition-all duration-200 hover:bg-gray-50 hover:shadow-md"
+          disabled={loading}
+          onClick={signInWithGoogle}
+        >
+          {loading ? (
+            <Spinner className="mr-2 size-5" />
+          ) : (
+            <svg className="mr-3 size-5" viewBox="0 0 24 24" aria-hidden>
+              <path
+                fill="#4285F4"
+                d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z"
               />
-              <button
-                type="button"
-                className="absolute right-2 top-1/2 -translate-y-1/2 text-muted-foreground hover:text-foreground"
-                onClick={() => setShowPw((v) => !v)}
-                aria-label={showPw ? "비밀번호 숨기기" : "비밀번호 표시"}
-              >
-                {showPw ? <EyeOff className="size-4" /> : <Eye className="size-4" />}
-              </button>
-            </div>
-          </div>
-          <Button type="button" className="w-full" disabled={loading} onClick={() => void submit()}>
-            {loading ? (
-              <>
-                <Spinner className="mr-2 size-4" />
-                로그인 중…
-              </>
-            ) : (
-              "로그인"
-            )}
-          </Button>
-        </div>
+              <path
+                fill="#34A853"
+                d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.77c-.98.66-2.23 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84C3.99 20.53 7.7 23 12 23z"
+              />
+              <path
+                fill="#FBBC05"
+                d="M5.84 14.09c-.22-.66-.35-1.36-.35-2.09s.13-1.43.35-2.09V7.07H2.18C1.43 8.55 1 10.22 1 12s.43 3.45 1.18 4.93l2.85-2.22.81-.62z"
+              />
+              <path
+                fill="#EA4335"
+                d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.07l3.66 2.84c.87-2.6 3.3-4.53 6.16-4.53z"
+              />
+            </svg>
+          )}
+          {loading ? "연결 중…" : "Google 계정으로 로그인"}
+        </Button>
+
+        <p className="mt-4 text-center text-xs text-muted-foreground">
+          허용된 관리자 구글 계정만 접근할 수 있습니다.
+        </p>
+
         {error ? <p className="mt-4 text-center text-sm text-destructive">{error}</p> : null}
       </div>
     </div>

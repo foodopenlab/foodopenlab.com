@@ -1,5 +1,158 @@
 # Backend Version Log
 
+## [v0.4.1] - 2026-07-21
+
+### Added
+- **보안 응답 헤더 미들웨어**(`main.py`, CORS 뒤 `@app.middleware("http")`) — 전 응답에 `X-Content-Type-Options: nosniff`, `X-Frame-Options: DENY`(클릭재킹), `Referrer-Policy: strict-origin-when-cross-origin`, `Permissions-Policy: camera=(), microphone=(), geolocation=()`, `Strict-Transport-Security: max-age=31536000; includeSubDomains` 부여.
+  - **CSP 경로별 분기**: 순수 JSON API는 강하게 `default-src 'none'; frame-ancestors 'none'; base-uri 'none'`; `/docs`·`/redoc`(Swagger/ReDoc)는 CDN(jsdelivr)·인라인 스크립트가 필요해 완화(`script-src/style-src 'self' 'unsafe-inline' https://cdn.jsdelivr.net` 등)해 문서가 깨지지 않게 함.
+
+### Changed
+- **`Server: uvicorn` 헤더 노출 제거** — `backend/Dockerfile` CMD에 `--no-server-header` 추가(적용에는 백엔드 **재빌드** 필요). 미들웨어에서 Server를 덮어쓰려던 무효 라인 제거.
+
+### Notes
+- 검증: 재시작 후 라이브 — `GET /` CSP=`default-src 'none'`+5헤더, `GET /docs` CSP=완화(swagger 정상), HSTS 적용 확인.
+- 후속: `Server` 헤더 제거는 `docker compose up -d --build backend` 재빌드 시 반영(현재는 restart만 반영돼 헤더는 적용, Server는 잔존).
+
+## [v0.4.0] - 2026-07-21
+
+### Added
+- **어드민 로그인·`/docs` 보호를 구글 OAuth(RBAC)로 전환.** 허용 계정은 `.env ADMIN_GOOGLE_EMAILS`(콤마 목록)로 관리, 일반사용자↔어드민은 `role=admin` 클레임으로 RBAC 구분.
+  - **공유 커널 구글 헬퍼** `core/matrix/grid_google_oauth_manager.py` — `build_authorize_url(redirect_uri, state)` + `fetch_google_identity(code, redirect_uri) -> (email, name)`. redirect_uri를 호출자가 주입해 유저/어드민이 서로 다른 콜백 사용(기존 유저 구글 로그인 흐름은 무변경).
+  - **어드민 구글 흐름**(mfds_admin): `GET /admin/auth/google/login`(state 쿠키 심고 구글로) + `GET /admin/auth/google/callback`(state 검증 → 이메일 → 허용목록 확인 → `AdminORM` upsert → `create_admin_token`으로 role=admin JWT 발급). `next=/docs`면 `admin_docs_session` 쿠키 설정 후 `/docs`로, 아니면 어드민 프론트 `#access_token`으로. 신규: `admin_google_auth_use_case`·`admin_google_auth_interactor`·`admin_google_auth_router`·`dependencies/admin_google_auth`, `AdminRepositoryPort.upsert_google_admin`(사용불가 랜덤 해시로 NOT NULL 충족 — 비번 로그인 폐지).
+  - **core RBAC 가드 확장** `grid_admin_guard_manager.decode_admin_jwt(token)` — 헤더용 `verify_admin_jwt`와 `/docs` 쿠키 검증이 공유.
+  - **`/docs`·`/redoc`·`/openapi.json`**(main.py): HTTP Basic(ADMIN_EMAIL/PASSWORD) 폐지 → `admin_docs_session` 쿠키(admin JWT, role=admin) 검증. 미인증 시 `/admin/auth/google/login?next=/docs`로 307.
+
+### Removed
+- **비밀번호 어드민 로그인 폐지**: `POST /admin/login`·`/admin/loginn`(admin_auth_router 언마운트). `admin_auth_interactor.create_admin_token`은 구글 인터랙터가 재사용하므로 존치.
+
+### Fixed
+- `seed_admin.py`가 v0.3.3에서 삭제된 `mfds_user.app.services.security`를 import하던 회귀 → `matrix.grid_cypher_password_manager`로 교정.
+
+### Notes
+- **운영 필수 조치**: ① 구글 클라우드 콘솔에 승인된 리다이렉트 URI `https://api.foodopenlab.com/admin/auth/google/callback` 추가. ② `.env`에 `ADMIN_GOOGLE_EMAILS=kcs8815@gmail.com`·`ADMIN_GOOGLE_REDIRECT_URI=...callback` 추가 완료(비밀값 아님). 기존 `ADMIN_EMAIL`/`ADMIN_PASSWORD`는 더 이상 로그인·docs에 쓰이지 않음(시드 스크립트에만 잔존).
+- 검증: 재시작 후 라이브 — `GET /docs`→307(구글 로그인), `/admin/auth/google/login`→302(구글, redirect_uri·state 정상), `/admin/members` 무토큰→401(RBAC), `POST /admin/login`→404. 실제 구글 동의→콜백은 브라우저+등록된 redirect URI 필요.
+
+## [v0.3.9] - 2026-07-21
+
+### Changed
+- **`mfds_user ↔ mfds_admin` Spoke↔Spoke 결합 해소 — 공유 커널(core) 도입.** 두 BC가 같은 물리 DB 테이블을 공유 ORM 클래스로 직접 참조하던(폴리모픽 `users` 상속 + 서로의 테이블 교차 조회) 구조를 정리.
+  - **신규 공유 커널 `core/matrix/orm/`** — BC 경계를 넘어 공유되는 5개 ORM을 이관(`git mv`): `user_orm`(UserORM base, `users`)·`expert_user_orm`·`agent_message_orm`(mfds_user 소유, admin이 조회)·`expert_whitelist_orm`·`search_log_orm`(mfds_admin 소유, user가 조회). `AdminORM`·`ExpertUserORM`은 이제 `matrix.orm.user_orm.UserORM`을 상속. import 경로를 `mfds_user/mfds_admin.adapter.outbound.orm.*` → `matrix.orm.*`로 일괄 재작성(13파일). 메타데이터는 단일 `Base` 공유라 등록 무영향.
+  - **인증 결합 제거**: user 라우터 2개(`daily_report_router`·`report_feedback_router`)가 `mfds_admin`의 `verify_admin_token`(+`AdminTokenPayloadSchema`)로 admin 게이팅하던 것을, 이미 존재하던 **core 가드 `matrix.grid_admin_guard_manager.verify_admin_jwt`**로 교체(서명·만료·role 검증, DB 접근 없음 — apps 간 참조 방지). 해당 게이트 파라미터는 본문 미사용이라 `_admin: str` 게이트로 정리.
+
+### Notes
+- 검증: `mfds_admin→mfds_user`·`mfds_user→mfds_admin`·`core→apps` 참조 **전부 0건**. 컨테이너 재시작 후 라이브 부팅 정상(ImportError/Traceback 없음, 스케줄러 기동), 상속·6개 테이블 등록(`users·expert_users·admins·expert_whitelist·agent_messages·search_logs`) 확인. 라이브 HTTP: `GET /`·`/recalls/latest`=200, 무토큰 `POST /admin/reports/generate`·`GET /mypage/profile`=401(가드 동작).
+- `mfds_admin`의 `verify_admin_token` 미들웨어는 admin 자체 라우터용으로 존치(더 이상 user가 참조하지 않음).
+- **감사에서 도출된 모든 규칙 위반 정리 완료** — Star Topology(Spoke↔Spoke 0), 레이어 경계(interactor FastAPI/ORM/adapter 침투 0, output port ORM 노출 0), Schema=DTO 혼용 0, DDD 공백(mfds_admin·siliconvalley 엔티티) 해소, 문서 SSOT 정합.
+
+## [v0.3.8] - 2026-07-21
+
+### Added
+- **`siliconvalley` 도메인 레이어 신설 — DDD 공백(도메인 엔티티 0개) 해소.** 크루 5인(실리콘밸리 등장인물 에이전트)의 정체성을 도메인이 소유하도록 모델링:
+  - `domain/value_objects/piper_role_vo.py` — `PiperRole` VO(CEO·COO·HR·SYS·DASH).
+  - `domain/entities/piper_crew_member_entity.py` — `PiperCrewMember` 엔티티(id·name·role).
+  - `domain/piper_crew_registry.py` — 크루 5인 정체성 **SSOT** 레지스트리 + `get_crew_member(role)`.
+
+### Changed
+- **크루 정체성을 라우터 하드코딩 → 도메인 SSOT로 이관.** 5개 슬라이스의 `introduce_myself`가 라우터에 하드코딩된 `{id,name}`을 `schema_to_query`로 넘기던 것을, interactor가 도메인 registry에서 `PiperCrewMember`를 해석해 Response를 구성하도록 변경. 라우터는 하드코딩 없이 `introduce_myself()` 호출 후 `response_to_schema`만 수행.
+
+### Removed
+- **echo 전용 outbound 레이어 제거(정적 도메인 데이터엔 불필요한 의식).** 입력을 그대로 되돌려주던 output port 5개(`app/ports/output/piper_*_port.py`)·repository 5개(`adapter/outbound/client/piper_*_repository.py`) 삭제, provider는 interactor만 구성(`get_*_use_case` 이름·라우터 배선 유지). assembler의 `schema_to_query` 제거(`response_to_schema`만 유지). 빈 스텁 `domain/piper_hendricks_ceo_topology.py` 삭제. `n8n_client`·`dependencies/providers.py`는 무관하여 유지.
+
+### Notes
+- 검증: 컨테이너에서 `piper_router` 조립(5 라우트) + 5개 interactor의 도메인 해석 스모크 통과(응답 id/name은 기존과 동일, 이제 도메인 SSOT 소스). siliconvalley 전체 py_compile OK, 잔여 참조 0건. 테스트 없음(스캐폴드).
+- 잔여(경미): 각 슬라이스 dto의 `*Query`는 현재 미사용(향후 POST 엔드포인트용으로 존치). `app/use_case`(단수) 디렉토리 네이밍은 §12 관례(`app/use_cases`)와 다르나 이번 범위 밖.
+- **감사 항목 전부 정리 완료** — 남은 백로그는 `mfds_user↔mfds_admin` 공유 ORM 테이블 결합(중대 리팩터) 1건.
+
+## [v0.3.7] - 2026-07-21
+
+### Changed
+- **`titanic` jack·rose interactor의 adapter 직접 import 제거 — Clean/Hexagonal 경계 복원.** application(interactor)이 `adapter/outbound/orm/passenger_rose_model_strategies`(sklearn 기반 Strategy 구현체·팩토리)를 직접 import하던 위반 해소.
+  - **전략 파일 이전**: `adapter/outbound/orm/passenger_rose_model_strategies.py` → `adapter/outbound/ml/survival_strategies.py`(`git mv`). `SurvivalModelStrategy` 포트 docstring이 지정한 위치이자, ORM(테이블)이 아닌 ML 어댑터임을 명확히 함.
+  - **DI 주입**: `JackTrainerInteractor`·`RoseModelInteractor` 생성자에 `build_strategies`(팩토리 콜러블)와(rose는) 기본 `strategy`를 주입받도록 변경. 구상 전략을 import하는 책임은 composition root(`dependencies/*_provider.py`)로 이동 — 프로바이더가 `build_all_strategies`·`RandomForestStrategy()`를 wiring.
+
+### Fixed
+- **v0.3.5(Schema→Query) 리팩터로 깨졌던 titanic use_case 테스트 5건 수정.** `introduce_myself` 테스트가 `*Schema`를 넘기던 것을 `*Query`로 교체(jack·cal·james), james upload 테스트를 새 계약(interactor가 매핑된 엔티티 수신)에 맞게 재작성. jack을 생성하는 테스트(jack·cal)에 `build_strategies=build_all_strategies` 주입.
+
+### Notes
+- 검증: **전 앱** interactor의 `adapter.outbound` 직접 import **0건**, 구 strategies 경로 참조 0건. `apps/titanic/tests` **35 passed**(2 deselected=라이브 Ollama 통합). 컨테이너에서 프로바이더·interactor DI 구성 스모크 통과(전략 10종 로드).
+- 남은 백로그: `mfds_user↔mfds_admin` 공유 ORM 테이블 결합, `siliconvalley` 도메인 엔티티 부재.
+
+## [v0.3.6] - 2026-07-21
+
+### Changed
+- **`braindead`(watcher·judge)·`ontology`(vision)의 Schema=DTO 혼용 제거 — 백엔드 전체에서 이 위반 카테고리 소멸.** titanic과 동일 패턴(유일 Schema 사용처가 `introduce_myself`, `*Query` DTO 이미 존재, output port도 이미 Query 수신)이라 검증 스크립트로 3개 슬라이스 일괄 변환: port·interactor 시그니처 `schema: *Schema` → `query: *Query`, interactor의 `*Query(id=schema.id, name=schema.name)` → `query` 축약, 라우터 호출 `*Schema(...)` → `*Query(...)`. 라우터의 `response_model=*Schema`(출력 계약)는 유지.
+
+### Notes
+- 검증: **전 백엔드** `app/ports`·`app/use_cases`의 inbound schema import **0건 달성**. 컨테이너에서 watcher·judge·vision 라우터·인터랙터 import 스모크 통과.
+- 이로써 감사 항목 중 "Schema=DTO 혼용"은 전 앱(titanic 12 + braindead 2 + ontology 1) 완전 해소. 남은 별도 카테고리: `titanic`의 `passenger_jack_trainer`·`passenger_rose_model` interactor ORM 직참, `mfds_user↔mfds_admin` 공유 ORM 결합, `siliconvalley` 도메인 엔티티 부재.
+
+## [v0.3.5] - 2026-07-21
+
+### Changed
+- **`titanic` 12개 슬라이스의 Schema=DTO 혼용 제거 — 경계 게이트 정상화.** input port·interactor가 inbound `*Schema`(pydantic)를 use-case 타입으로 쓰던 위반을 앱 DTO로 교체. 각 슬라이스에 이미 존재하던 `*Query`/`*Response` DTO를 활용(output port는 이미 `*Query`를 받고 있었음).
+  - **공통 `introduce_myself`(12슬라이스)**: port·interactor 시그니처를 `schema: *Schema` → `query: *Query`로, 라우터 호출을 `*Schema(...)` → `*Query(...)`로 교체(검증 포함 스크립트로 10개 단순 슬라이스 일괄 변환, smith·james 수작업). 라우터의 `response_model=*Schema`(출력 계약)는 유지 — 라우터는 Schema 사용 허용.
+  - **`crew_smith_captain.chat`**: 신규 DTO `ChatCommand`/`ChatMessage` 추가. port·interactor를 `ChatSchema` → `ChatCommand`로 전환, 라우터가 요청 `ChatSchema`(Body) → `ChatCommand` 매핑.
+  - **`crew_james_director.upload`**: 신규 DTO `UploadResult` 추가. port가 `list[FileUploadSchema] → UploadResultSchema` 대신 도메인 엔티티(`JackPassenger`/`RoseBooking`) → `UploadResult`를 다루도록 변경. Schema→Entity 매핑(`file_upload_schemas_to_upload_entities`)을 interactor→라우터(inbound adapter)로 이동.
+
+### Notes
+- 검증: `titanic`의 `app/ports`·`app/use_cases`에서 inbound schema import **0건**, 컨테이너에서 titanic 라우터 12개 + 인터랙터 전체 import 스모크 통과. 단순 슬라이스는 py_compile 통과.
+- 남은 동종 패턴(별도, 소규모): `braindead`(port·interactor 각 2)·`ontology`(각 1)의 Schema=DTO 혼용. 별도 카테고리 잔여: `titanic`의 `passenger_jack_trainer`·`passenger_rose_model` interactor가 ORM 직접 import(모델 영속화), `mfds_user↔mfds_admin` 공유 ORM 결합, `siliconvalley` 도메인 엔티티 부재.
+
+## [v0.3.4] - 2026-07-21
+
+### Added
+- **`mfds_admin` 도메인 엔티티 신설** `domain/entities/admin_entity.py`(`Admin`: id·email·name·hashed_password·last_login) — 그동안 도메인 엔티티 0개로 ORM을 도메인처럼 쓰던 DDD 공백 해소. `domain/`·`domain/entities/` 패키지도 함께 생성.
+
+### Changed
+- **output port의 ORM 노출 제거 — DIP 위반 해소(백엔드 전 앱 0건 달성).**
+  - `admin_repository`(포트): `get_admin_by_email(...) -> Optional[AdminORM]` → `-> Optional[Admin]`. `admin_pg_repository`가 ORM→`Admin` 엔티티 매핑. `admin_auth_interactor`는 필드명이 동일해 무변경.
+  - `whitelist_repository`(포트): `ExpertWhitelistORM` 노출 제거 → app DTO(`AddWhitelistCommand`/`WhitelistEntryDTO`)로 통화. `save(entry: ORM)` → `save(command: AddWhitelistCommand)`로 바꿔 **ORM 생성 책임을 interactor→repo(어댑터)로 이동**. `whitelist_pg_repository`가 ORM↔DTO 매핑(`_to_dto`) 담당, `delete_by_email`은 ORM 직접 조회로 정리. `whitelist_interactor`는 ORM import 제거·`replace(command, email=email)`로 정규화만 위임(조회 테이블이라 별도 도메인 엔티티는 두지 않음 — Simplicity First).
+
+### Notes
+- 검증: 전 앱 output port의 `adapter.outbound.orm` import **0건**, 컨테이너 스모크(엔티티·포트 시그니처·admin_auth·whitelist·member 재사용·DI·`/admin/login` 라우트) 통과. member 승격/강등은 입력 포트(`WhitelistUseCase`) 재사용이라 무영향.
+- 남은 백로그: `titanic` Schema=DTO 혼용(interactor 12·port 12, ORM 직참 interactor 2 포함), `mfds_user↔mfds_admin` 공유 ORM 테이블 결합, `siliconvalley` 도메인 엔티티 부재.
+
+## [v0.3.3] - 2026-07-21
+
+### Changed
+- **비밀번호 해싱/검증을 공유 커널 `core/`로 이전 — Spoke↔Spoke 결합 1건 해소.** `mfds_user/app/services/security.py`(`hash_password`·`verify_password`, PBKDF2-HMAC-SHA256)를 `core/matrix/grid_cypher_password_manager.py`로 이동(Matrix 네이밍 관례 준수). `mfds_admin/app/use_cases/admin_auth_interactor.py`의 `from mfds_user...security import verify_password` → `from matrix.grid_cypher_password_manager import verify_password`로 교체. 로컬 인증 폐지(v0.3.0) 이후 `security.py`는 이미 mfds_user 내부 사용처가 없어 원본 삭제(전역 이동).
+
+### Notes
+- 검증: 컨테이너 내 해시 왕복(hash→verify True/오답 False) 및 interactor가 core 함수를 참조함 확인. `mfds_admin → mfds_user` 중 **security 유틸 참조는 0건**으로 해소.
+- **남은 결합(별도 후속)**: `mfds_user ↔ mfds_admin`는 여전히 **공유 ORM 테이블**로 얽힘 — `mfds_admin`이 `UserORM`·`ExpertUserORM`·`AgentMessageORM` 참조(`admin_orm`/`logs_pg_repository`/`member_pg_repository`), `mfds_user`가 `ExpertWhitelistORM` 참조(5파일). 이는 BC 간 영속성 모델 공유 문제로, 공유 커널 이전 또는 Hub(`ontology`) 경유가 필요한 중대 리팩터.
+
+## [v0.3.2] - 2026-07-21
+
+### Changed
+- **`admin_auth_interactor`의 FastAPI 침투 제거 — Clean/Hexagonal 경계 복원.** application 레이어(interactor)가 `from fastapi import HTTPException`으로 HTTP 상태코드(503/401)를 직접 던지던 위반을 해소. 신규 애플리케이션 예외 `AdminConfigError`(설정 누락)·`AdminAuthError`(인증 실패)를 `mfds_admin/app/exceptions.py`에 정의하고, interactor는 이 도메인 예외를, 라우터(`admin_auth_router`)가 각각 503/503·401로 HTTP 변환하도록 배선. 기존 503/401 구분·에러 메시지·`/admin/loginn` 오타 alias 동작 모두 보존.
+
+### Notes
+- 백엔드 규칙 감사 후속 정리(가벼운 항목 우선). 검증: 전 앱 interactor의 `fastapi`/`Depends` 침투 grep 0건, 컨테이너 내 interactor·router·exceptions import 스모크 통과, `/admin/login`·`/admin/loginn` 라우트 정상 로드.
+- 남은 백로그: `mfds_user↔mfds_admin` Spoke↔Spoke 결합, `titanic` Schema=DTO 혼용(12), output port의 ORM 노출(`admin_repository`/`whitelist_repository`) + `mfds_admin`/`siliconvalley` 도메인 엔티티 부재.
+
+## [v0.3.1] - 2026-07-21
+
+### Changed
+- **`backend/_docs/CLAUDE.md`의 Star Topology 섹션을 실제 코드·master 스펙에 정합화(문서 SSOT 불일치 해소).** canonical child 스펙이 존재하지 않는 `apps/star_craft/`를 Hub로 명시하던 오류를 수정 — **Hub 앱은 `apps/ontology/`**(“Star-Craft”는 토폴로지 코드명일 뿐 앱명 아님)로 바로잡음. 다이어그램·Hub 경로·의존성 규칙(`ontology → {spoke}`)·frontmatter 예제(`domain: ontology`)·spoke 표(실제 구현 5 + 계획 3 구분, `sample`/`adapters`는 BC 아님 명시)·grep 예제를 전부 교정. 근거 3개 SSOT 명시: master §11 · `ontology/_docs/star-craft-pipeline.md`(`type: hub, domain: ontology`) · `braindead/_docs/rule.md`. 이전 `star-craft-pipeline.md` 정합화(v-log 하단 참조)에서 누락됐던 child 스펙 갱신을 완결.
+
+### Notes
+- 백엔드 전반 규칙 감사에서 도출된 문서-코드 불일치를 우선 정리한 항목. 코드 레벨 위반(예: `mfds_user↔mfds_admin` Spoke↔Spoke 결합, `admin_auth_interactor`의 `HTTPException` 침투, `titanic`의 Schema=DTO 혼용, 일부 output port의 ORM 노출)은 별도 후속 과제로 남김 — 알려진 위반은 `_docs/CLAUDE.md` Harness Validation 체크리스트 하단에 명시.
+
+## [v0.3.0] - 2026-07-21
+
+### Removed
+- **로컬(이메일/비밀번호) 회원가입·로그인 전면 폐지 — 소셜(OAuth) 가입만 허용.** `POST /auth/signup`·`POST /auth/login`·`POST /auth/refresh`·`DELETE /auth/logout`(모두 `auth_router.py`) 제거. 로컬 전용 파일 삭제: `auth_router.py`·`auth_schema.py`·`auth_mapper.py`·`auth_interactor.py`·`app/ports/input/auth_use_case.py`. `SignupCommand`·`LoginCommand` DTO 제거(`UserSessionDTO`는 OAuth·Redis 세션이 사용하므로 유지).
+- **`PATCH /mypage/password` 제거** — 소셜 전용 계정은 비밀번호가 없어(`hashed_password=None`) 항상 실패하던 무의미 엔드포인트. `PasswordUpdateRequest` 스키마와 `security.hash_password`/`verify_password` import도 정리.
+
+### Changed
+- **`DELETE /mypage/withdraw`를 토큰 전용으로 변경** — 기존에는 비밀번호 입력을 요구해 소셜 유저가 탈퇴 불가능했음. 이제 인증 토큰만으로 탈퇴 처리.
+- **역할 하드코딩(`role=EXPERT`) 불일치 제거.** `auth_pg_repository`를 `find_all_active` 한 메서드로 축소하고(리포트 스케줄러 배치용) 하드코딩 `EXPERT`를 기본값 `GENERAL`로 교체 — 역할의 SSOT는 화이트리스트(관리자 승격)이며 토큰 발급 시점에 결정된다는 규칙(v0.2.8)과 일관화. `AuthRepository` 포트도 `find_all_active`만 남기고 로컬 인증·세션·화이트리스트 조회 메서드 전부 제거. `dependencies/auth.py`는 `get_auth_repository`만 유지(`get_auth_use_case` 삭제).
+
+### Notes
+- 세션 저장소 이원화(로컬=PG / OAuth=Redis) 불일치는 로컬 인증 제거로 자연 해소 — 이제 세션은 OAuth의 Redis 스토어 단일 경로.
+- 검증: 컨테이너 내 라우터 import 스모크 테스트 통과 — `/auth/signup·login·refresh·logout`·`/mypage/password` 부재 확인, `/auth/{provider}/login·callback`·`/mypage/withdraw` 잔존. `report_scheduler`·`daily_report` 배선 import 정상.
+- **프론트엔드 후속 필요(별도 범위)**: `app/signup`(`auth/signup`)·`app/login`(`/api/auth/login`)·`app/mypage/password`(`/api/mypage/password`) 페이지가 제거된 엔드포인트를 호출 → 소셜 로그인 진입점으로 정리 필요. 기존 이메일 가입 계정은 로그인 경로가 사라져 접근 불가.
+
 ## [v0.2.9] - 2026-07-20
 
 ### Removed

@@ -4,7 +4,7 @@ from unittest.mock import AsyncMock, MagicMock
 
 pytestmark = pytest.mark.asyncio
 
-from titanic.adapter.inbound.api.schemas.passenger_jack_trainer_schema import JackTrainerSchema
+from titanic.adapter.outbound.ml.survival_strategies import build_all_strategies
 from titanic.app.dtos.passenger_jack_trainer_dto import JackTrainerQuery, JackTrainerResponse
 from titanic.app.use_cases.crew_lowe_boat_interactor import LoweBoatInteractor
 from titanic.app.use_cases.passenger_jack_trainer_interactor import JackTrainerInteractor
@@ -101,23 +101,21 @@ def mock_repository():
 
 @pytest.fixture
 def interactor(mock_repository):
-    return JackTrainerInteractor(repository=mock_repository)
+    return JackTrainerInteractor(repository=mock_repository, build_strategies=build_all_strategies)
 
 
 class TestIntroduceMyself:
     async def test_calls_repository_with_correct_query(self, interactor, mock_repository):
-        schema = JackTrainerSchema(id=9, name="Jack Dawson")
+        query = JackTrainerQuery(id=9, name="Jack Dawson")
 
-        await interactor.introduce_myself(schema)
+        await interactor.introduce_myself(query)
 
-        mock_repository.introduce_myself.assert_called_once_with(
-            JackTrainerQuery(id=9, name="Jack Dawson")
-        )
+        mock_repository.introduce_myself.assert_called_once_with(query)
 
     async def test_returns_repository_response(self, interactor):
-        schema = JackTrainerSchema(id=9, name="Jack Dawson")
-
-        response = await interactor.introduce_myself(schema)
+        response = await interactor.introduce_myself(
+            JackTrainerQuery(id=9, name="Jack Dawson")
+        )
 
         assert response == JackTrainerResponse(id=9, name="Jack Dawson")
 

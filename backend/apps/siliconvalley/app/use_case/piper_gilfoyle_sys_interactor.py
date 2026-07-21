@@ -1,14 +1,15 @@
 from __future__ import annotations
 
-from siliconvalley.app.dtos.piper_gilfoyle_sys_dto import GilfoyleSysQuery, GilfoyleSysResponse
+from siliconvalley.app.dtos.piper_gilfoyle_sys_dto import GilfoyleSysResponse
 from siliconvalley.app.ports.input.piper_gilfoyle_sys_use_case import GilfoyleSysUseCase
-from siliconvalley.app.ports.output.piper_gilfoyle_sys_port import GilfoyleSysPort
+from siliconvalley.domain.piper_crew_registry import get_crew_member
+from siliconvalley.domain.value_objects.piper_role_vo import PiperRole
 
 
 class GilfoyleSysInteractor(GilfoyleSysUseCase):
 
-    def __init__(self, repository: GilfoyleSysPort) -> None:
-        self._repository = repository
+    _ROLE = PiperRole.SYS
 
-    async def introduce_myself(self, query: GilfoyleSysQuery) -> GilfoyleSysResponse:
-        return await self._repository.introduce_myself(query)
+    async def introduce_myself(self) -> GilfoyleSysResponse:
+        member = get_crew_member(self._ROLE)
+        return GilfoyleSysResponse(id=member.id, name=member.name)

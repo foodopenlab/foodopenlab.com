@@ -2,11 +2,8 @@
 
 import { useEffect, useState } from "react"
 import Link from "next/link"
-import { useRouter } from "next/navigation"
 import { socialLoginUrl } from "@/lib/oauth-url"
 import { Button } from "@/components/ui/button"
-import { Input } from "@/components/ui/input"
-import { Label } from "@/components/ui/label"
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
 import { Spinner } from "@/components/ui/spinner"
 import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert"
@@ -37,13 +34,10 @@ function GoogleIcon({ className }: { className?: string }) {
 }
 
 export default function LoginPage() {
-  const router = useRouter()
   const [isGoogleLoading, setIsGoogleLoading] = useState(false)
   const [isKakaoLoading, setIsKakaoLoading] = useState(false)
   const [isNaverLoading, setIsNaverLoading] = useState(false)
   const [loginError, setLoginError] = useState<string | null>(null)
-
-  const [isEmailLoading, setIsEmailLoading] = useState(false)
 
   // 소셜 로그인 콜백 실패(백엔드가 /login?oauth_error=1 로 되돌림) 시 안내.
   useEffect(() => {
@@ -65,71 +59,6 @@ export default function LoginPage() {
   const handleNaverSignIn = () => {
     setIsNaverLoading(true)
     window.location.href = socialLoginUrl("naver")
-  }
-
-  const handleEmailSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
-    e.preventDefault()
-    setLoginError(null)
-    
-    const formData = new FormData(e.currentTarget)
-    const email = String(formData.get("email") ?? "").trim()
-    const password = String(formData.get("password") ?? "")
-
-    if (!email) {
-      setLoginError("이메일을 입력해 주세요.")
-      return
-    }
-    if (!password) {
-      setLoginError("비밀번호를 입력해 주세요.")
-      return
-    }
-
-    setIsEmailLoading(true)
-    try {
-      const res = await fetch("/api/auth/login", {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-          "Accept": "application/json",
-        },
-        body: JSON.stringify({ email, password }),
-      })
-
-      const data = await res.json().catch(() => null)
-
-      if (!res.ok) {
-        if (res.status === 503 || res.status === 502) {
-          setLoginError(
-            typeof data?.detail === "string"
-              ? data.detail
-              : "인증 서버에 연결할 수 없습니다. 사이트 관리자에게 문의해 주세요.",
-          )
-          return
-        }
-        if (res.status === 404) {
-          setLoginError("로그인 API를 찾을 수 없습니다. 배포 설정(BACKEND_URL)을 확인해 주세요.")
-          return
-        }
-        setLoginError(
-          typeof data?.detail === "string"
-            ? data.detail
-            : "이메일 또는 비밀번호가 올바르지 않습니다.",
-        )
-        return
-      }
-
-      if (data?.access_token) {
-        localStorage.setItem("access_token", data.access_token)
-        window.dispatchEvent(new Event("auth-state-change"))
-        router.push("/mypage")
-      } else {
-        setLoginError("서버 응답에 토큰이 누락되었습니다.")
-      }
-    } catch {
-      setLoginError("네트워크 오류로 로그인할 수 없습니다.")
-    } finally {
-      setIsEmailLoading(false)
-    }
   }
 
   return (
@@ -179,9 +108,16 @@ export default function LoginPage() {
             <Card className="border-border bg-card">
               <CardHeader className="text-center">
                 <CardTitle className="text-2xl text-foreground">로그인</CardTitle>
-                <CardDescription>소셜 계정 또는 이메일 계정으로 로그인하세요.</CardDescription>
+                <CardDescription>소셜 계정으로 로그인하세요.</CardDescription>
               </CardHeader>
               <CardContent className="space-y-6">
+                {loginError ? (
+                  <Alert variant="destructive">
+                    <AlertTitle>로그인 실패</AlertTitle>
+                    <AlertDescription>{loginError}</AlertDescription>
+                  </Alert>
+                ) : null}
+
                 <div className="space-y-3">
                   <Button
                     type="button"
@@ -229,71 +165,10 @@ export default function LoginPage() {
                   </Button>
                 </div>
 
-                <div className="relative">
-                  <div className="absolute inset-0 flex items-center">
-                    <div className="w-full border-t border-border" />
-                  </div>
-                  <div className="relative flex justify-center text-xs uppercase">
-                    <span className="bg-card px-2 text-muted-foreground">또는 이메일로 로그인</span>
-                  </div>
-                </div>
-
-                {loginError ? (
-                  <Alert variant="destructive">
-                    <AlertTitle>로그인 실패</AlertTitle>
-                    <AlertDescription>{loginError}</AlertDescription>
-                  </Alert>
-                ) : null}
-
-                <form onSubmit={handleEmailSubmit} noValidate className="space-y-4">
-                  <div className="space-y-2">
-                    <Label htmlFor="login-email" className="text-foreground">
-                      이메일
-                    </Label>
-                    <Input
-                      id="login-email"
-                      name="email"
-                      type="email"
-                      placeholder="업무용 이메일 주소"
-                      autoComplete="email"
-                      onChange={() => setLoginError(null)}
-                      className="h-11 border-border bg-input text-foreground placeholder:text-muted-foreground"
-                    />
-                  </div>
-                  <div className="space-y-2">
-                    <Label htmlFor="login-password" className="text-foreground">
-                      비밀번호
-                    </Label>
-                    <Input
-                      id="login-password"
-                      name="password"
-                      type="password"
-                      placeholder="비밀번호"
-                      autoComplete="current-password"
-                      onChange={() => setLoginError(null)}
-                      className="h-11 border-border bg-input text-foreground placeholder:text-muted-foreground"
-                    />
-                  </div>
-                  <Button
-                    type="submit"
-                    disabled={isEmailLoading}
-                    className="h-11 w-full bg-primary text-primary-foreground hover:bg-primary/90"
-                  >
-                    {isEmailLoading ? (
-                      <>
-                        <Spinner className="mr-2 h-4 w-4" />
-                        로그인 중...
-                      </>
-                    ) : (
-                      "이메일로 로그인"
-                    )}
-                  </Button>
-                </form>
-
                 <p className="text-center text-sm text-muted-foreground">
                   아직 계정이 없으신가요?{" "}
                   <Link href="/signup" className="text-primary underline underline-offset-2 hover:text-primary/80">
-                    무료로 가입하기
+                    소셜 계정으로 가입하기
                   </Link>
                 </p>
               </CardContent>

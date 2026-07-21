@@ -1,14 +1,15 @@
 from __future__ import annotations
 
-from siliconvalley.app.dtos.piper_dunn_coo_dto import DunnCooQuery, DunnCooResponse
+from siliconvalley.app.dtos.piper_dunn_coo_dto import DunnCooResponse
 from siliconvalley.app.ports.input.piper_dunn_coo_use_case import DunnCooUseCase
-from siliconvalley.app.ports.output.piper_dunn_coo_port import DunnCooPort
+from siliconvalley.domain.piper_crew_registry import get_crew_member
+from siliconvalley.domain.value_objects.piper_role_vo import PiperRole
 
 
 class DunnCooInteractor(DunnCooUseCase):
 
-    def __init__(self, repository: DunnCooPort) -> None:
-        self._repository = repository
+    _ROLE = PiperRole.COO
 
-    async def introduce_myself(self, query: DunnCooQuery) -> DunnCooResponse:
-        return await self._repository.introduce_myself(query)
+    async def introduce_myself(self) -> DunnCooResponse:
+        member = get_crew_member(self._ROLE)
+        return DunnCooResponse(id=member.id, name=member.name)
