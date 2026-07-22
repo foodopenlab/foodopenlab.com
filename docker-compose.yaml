@@ -119,6 +119,28 @@ services:
       korean_law_mcp:
         condition: service_healthy
 
+  # ── Auth (인증 전용, backend와 같은 빌드·코드마운트, command만 다름) ──
+  # 발급(개인키)은 이 컨테이너에만. cloudflared가 http://auth:9000 으로 라우팅.
+  # ⚠️ ports 없음 — 외부 진입은 cloudflared 터널만.
+  auth:
+    build:
+      context: ./backend
+      dockerfile: Dockerfile
+    container_name: auth
+    restart: unless-stopped
+    command: uvicorn auth_main:app --host 0.0.0.0 --port 9000
+    volumes:
+      - ./backend:/app
+      - /app/__pycache__
+    env_file:
+      - ./backend/.env        # 공유: DB·Redis·OAuth client secrets
+      - ./backend/.env.auth   # auth 전용: JWT_PRIVATE_KEY_B64·JWT_PUBLIC_KEY_B64·JWT_KID·SERVICE_AUD
+    depends_on:
+      pgvector:
+        condition: service_healthy
+      redis:
+        condition: service_healthy
+
   frontend:
     build:
       context: ./frontend
@@ -154,6 +176,7 @@ services:
     restart: unless-stopped
     depends_on:
       - backend
+      - auth
       - frontend
       - n8n
 

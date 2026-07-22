@@ -1,6 +1,6 @@
 from abc import ABC, abstractmethod
 
-from ontology.app.dtos.gateway_dto import Intent
+from ontology.app.dtos.semantic_dto import Intent
 
 
 class IIntentClassifierPort(ABC):

@@ -3,14 +3,14 @@ from __future__ import annotations
 import logging
 import time
 
-from ontology.app.dtos.gateway_dto import Destination, GatewayQuery, GatewayResult, Intent
-from ontology.app.ports.input.gateway_use_case import IGatewayUseCase
+from ontology.app.dtos.semantic_dto import Destination, SemanticQuery, SemanticResult, Intent
+from ontology.app.ports.input.semantic_use_case import ISemanticUseCase
 from ontology.app.ports.output.audit_log_port import IAuditLogPort
 from ontology.app.ports.output.gemini_port import IGeminiPort
 from ontology.app.ports.output.intent_classifier_port import IIntentClassifierPort
 from ontology.app.ports.output.rag_port import IRagPort
 from ontology.app.ports.output.search_port import ISearchPort
-from ontology.domain.entities.gateway_audit_log_entity import GatewayAuditLog
+from ontology.domain.entities.semantic_audit_log_entity import SemanticAuditLog
 
 logger = logging.getLogger(__name__)
 
@@ -18,7 +18,7 @@ _REJECT_REPLY = "죄송합니다. 보안·민감정보에 대한 요청은 처�
 _ANSWER_PREVIEW_LEN = 500
 
 
-class GatewayInteractor(IGatewayUseCase):
+class SemanticInteractor(ISemanticUseCase):
     """
     게이트웨이 두뇌 — 시맨틱 라우팅.
 
@@ -46,7 +46,7 @@ class GatewayInteractor(IGatewayUseCase):
             Destination.REJECT: self._handle_reject,
         }
 
-    async def ask(self, query: GatewayQuery) -> GatewayResult:
+    async def ask(self, query: SemanticQuery) -> SemanticResult:
         started = time.monotonic()
         intent = await self._classifier.classify(query.question)
         answer = await self._handlers[intent.destination](query.question, intent.entities)
@@ -54,7 +54,7 @@ class GatewayInteractor(IGatewayUseCase):
         latency_ms = int((time.monotonic() - started) * 1000)
 
         await self._record(query, intent, answer, blocked, latency_ms)
-        return GatewayResult(answer=answer, destination=intent.destination.value, blocked=blocked)
+        return SemanticResult(answer=answer, destination=intent.destination.value, blocked=blocked)
 
     async def _handle_general(self, question: str, entities: list[str]) -> str:
         return await self._gemini.generate(question)
@@ -69,12 +69,12 @@ class GatewayInteractor(IGatewayUseCase):
         return _REJECT_REPLY
 
     async def _record(
-        self, query: GatewayQuery, intent: Intent, answer: str, blocked: bool, latency_ms: int
+        self, query: SemanticQuery, intent: Intent, answer: str, blocked: bool, latency_ms: int
     ) -> None:
         # 감사 로그 실패가 사용자 응답을 막아서는 안 된다.
         try:
             await self._audit_log.record(
-                GatewayAuditLog(
+                SemanticAuditLog(
                     question=query.question,
                     destination=intent.destination.value,
                     entities=intent.entities,
@@ -85,4 +85,4 @@ class GatewayInteractor(IGatewayUseCase):
                 )
             )
         except Exception as exc:
-            logger.warning("[GatewayInteractor] 감사 로그 기록 실패: %s", exc)
+            logger.warning("[SemanticInteractor] 감사 로그 기록 실패: %s", exc)

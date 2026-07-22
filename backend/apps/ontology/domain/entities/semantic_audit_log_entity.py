@@ -5,7 +5,7 @@ from datetime import datetime
 
 
 @dataclass
-class GatewayAuditLog:
+class SemanticAuditLog:
     """
     시맨틱 게이트웨이를 통과한 모든 요청의 감사 로그(1행 = 1요청).
 

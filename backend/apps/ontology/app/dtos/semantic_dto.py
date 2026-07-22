@@ -28,13 +28,13 @@ class Intent:
 
 
 @dataclass(frozen=True)
-class GatewayQuery:
+class SemanticQuery:
     question: str
     client_ip: str | None = None
 
 
 @dataclass(frozen=True)
-class GatewayResult:
+class SemanticResult:
     answer: str
     destination: str
     blocked: bool = False

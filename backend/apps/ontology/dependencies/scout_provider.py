@@ -20,7 +20,7 @@ from ontology.app.ports.output.scout_result_reader_port import IScoutResultReade
 from ontology.app.use_cases.scout_interactor import ScoutInteractor
 from ontology.app.use_cases.scout_results_interactor import ScoutResultsInteractor
 from ontology.dependencies.crawler_provider import get_crawler_use_case
-from ontology.dependencies.gateway_provider import get_gemini_port
+from ontology.dependencies.semantic_provider import get_gemini_port
 from ontology.dependencies.scraper_provider import get_scraper_use_case
 
 

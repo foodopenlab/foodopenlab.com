@@ -6,7 +6,7 @@ import logging
 
 from matrix.grid_exaone_llm_manager import LLM_MODEL, chat_sync
 
-from ontology.app.dtos.gateway_dto import Destination, Intent
+from ontology.app.dtos.semantic_dto import Destination, Intent
 from ontology.app.ports.output.intent_classifier_port import IIntentClassifierPort
 
 logger = logging.getLogger(__name__)

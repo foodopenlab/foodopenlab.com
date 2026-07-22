@@ -1,5 +1,5 @@
 from fastapi import APIRouter
-from mfds_user.adapter.inbound.api.v1.oauth_router import router as oauth_router
+# oauth_router(옛 HS256 소셜로그인) 폐기 — 로그인은 auth(RS256)로 통합. auth.foodopenlab.com/auth/{provider}/login
 from mfds_user.adapter.inbound.api.v1.agent_router import router as agent_router
 from mfds_user.adapter.inbound.api.v1.recall_router import router as recall_router
 from mfds_user.adapter.inbound.api.v1.enforcement_router import router as enforcement_router
@@ -16,7 +16,6 @@ from mfds_user.adapter.inbound.api.v1.report_feedback_router import router as re
 from mfds_user.adapter.inbound.api.v1.data_sync_router import router as data_sync_router
 
 user_router = APIRouter()
-user_router.include_router(oauth_router)
 user_router.include_router(agent_router)
 user_router.include_router(recall_router)
 user_router.include_router(enforcement_router)

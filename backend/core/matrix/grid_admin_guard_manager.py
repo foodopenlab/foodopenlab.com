@@ -1,40 +1,37 @@
-import os
-from typing import Annotated
+"""Admin RBAC 가드 — auth(RS256) 통합. 시그니처는 유지해 라우터 무변경.
 
-import jwt
-from fastapi import Header, HTTPException
-from jwt.exceptions import ExpiredSignatureError, InvalidTokenError
+기존 HS256(ADMIN_JWT_SECRET) 대신 core seraph 검증기(공개키)를 쓰고,
+roles 클레임에 'admin'이 있는지로 RBAC를 판정한다.
+"""
+
+import os
+
+from fastapi import Depends, HTTPException
+
+from matrix.grid_seraph_token_guard_manager import (
+    TokenPayload,
+    get_current_user,
+    verify_token as _seraph_verify,
+)
+
+
+def _aud() -> str:
+    return (os.getenv("SERVICE_AUD") or "foodopenlab-api").strip()
 
 
 def decode_admin_jwt(token: str) -> dict:
-    """Admin JWT 서명·만료·role(=admin) 검증 후 payload 반환.
+    """RS256 검증 + roles에 admin 포함 확인 후 payload(dict) 반환. RBAC 단일 지점.
 
-    RBAC 판정의 단일 지점. 유효하지 않으면 HTTPException을 던진다.
-    (DB 계정 존재 확인은 mfds_admin 소관 — apps 간 직접 참조 방지.)
+    (raw 토큰 문자열용 — 예: /docs 쿠키 검증. 유효하지 않으면 HTTPException.)
     """
-    secret = (os.getenv("ADMIN_JWT_SECRET") or "").strip()
-    if not secret:
-        raise HTTPException(status_code=503, detail="Admin 인증 서버 설정이 완료되지 않았습니다.")
-    try:
-        payload = jwt.decode(token, secret, algorithms=["HS256"])
-    except ExpiredSignatureError as exc:
-        raise HTTPException(status_code=401, detail="토큰이 만료되었습니다") from exc
-    except InvalidTokenError as exc:
-        raise HTTPException(status_code=401, detail="유효하지 않은 토큰입니다") from exc
-
-    if payload.get("role") != "admin":
+    payload = _seraph_verify(token, _aud())  # 만료·서명·aud 검증(HTTPException on 실패)
+    if "admin" not in payload.roles:
         raise HTTPException(status_code=403, detail="Admin 권한이 없습니다")
-    return payload
+    return {"sub": payload.sub, "roles": payload.roles, "email": payload.email, "role": "admin"}
 
 
-async def verify_admin_jwt(authorization: Annotated[str | None, Header()] = None) -> str:
-    """Authorization: Bearer <admin JWT> 헤더 기반 RBAC 가드 → sub 반환."""
-    if not authorization or not authorization.strip():
-        raise HTTPException(status_code=401, detail="인증 토큰이 필요합니다")
-
-    parts = authorization.strip().split(maxsplit=1)
-    if len(parts) != 2 or parts[0].lower() != "bearer" or not parts[1].strip():
-        raise HTTPException(status_code=401, detail="올바르지 않은 토큰 형식입니다")
-
-    payload = decode_admin_jwt(parts[1].strip())
-    return str(payload.get("sub", ""))
+async def verify_admin_jwt(user: TokenPayload = Depends(get_current_user)) -> str:
+    """헤더/쿠키 토큰 기반 admin RBAC 가드 → sub 반환."""
+    if "admin" not in user.roles:
+        raise HTTPException(status_code=403, detail="Admin 권한이 없습니다")
+    return str(user.sub)

@@ -5,7 +5,7 @@
 export type SocialProvider = "google" | "kakao" | "naver"
 
 export function socialLoginUrl(provider: SocialProvider): string {
-  const base = (process.env.NEXT_PUBLIC_API_URL ?? "").replace(/\/$/, "")
-  const prefix = base ? `${base}/auth` : "/api/auth"
-  return `${prefix}/${provider}/login`
+  // 로그인은 auth 게이트웨이(RS256)로 통합. 콜백은 auth가 프론트 /auth/callback#토큰 으로 리다이렉트.
+  const base = (process.env.NEXT_PUBLIC_AUTH_URL || "https://auth.foodopenlab.com").replace(/\/$/, "")
+  return `${base}/auth/${provider}/login`
 }

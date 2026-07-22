@@ -1,5 +1,100 @@
 # Backend Version Log
 
+## [v0.7.0] - 2026-07-22
+
+### Changed
+- **인증 전면 통합 착수 — 유저·어드민 로그인을 auth(RS256)로 일원화 (A안).** 개발 단계라 HS256 브릿지 없이 직접 교체.
+  - **A1 — auth가 admin 역할 부여**: `role.resolve_roles_for_email()` — `ADMIN_GOOGLE_EMAILS` 화이트리스트로 로그인마다 role 재평가(admin/user). identity upsert가 roles를 받아 저장·갱신. RS256 토큰에 `email`·`name`·`roles` 클레임 추가. `TokenPayload`에 email/name 추가.
+  - **A2 — 백엔드 검증 RS256 전면 교체**(시그니처 유지 → 라우터 무변경):
+    - `mfds_user/dependencies/auth_helper.verify_token` → seraph `get_current_user`(RS256), roles→role 매핑.
+    - `core/matrix/grid_admin_guard_manager`(`verify_admin_jwt`·`decode_admin_jwt`) → RS256 + roles에 admin 확인. HS256/ADMIN_JWT_SECRET 제거.
+    - `mfds_admin/.../admin_auth_middleware.verify_admin_token` → RS256 + roles 판정. AdminORM 존재검증 제거(admin 원천이 auth 화이트리스트로 이동).
+  - **A2 설정**: `backend/.env`에 `JWT_PUBLIC_KEY_B64`+`SERVICE_AUD` 추가(검증 전용, 개인키 없음).
+
+### Notes
+- 검증: auth 테스트 28 passed, `main.py` import 무결(가드 3곳 교체 후 라우터 배선 정상).
+- **⚠️ 미완(다음 단계)**: A3 프론트 컷오버(로그인 버튼→`auth.foodopenlab.com/authz/...` + **auth 콜백을 브라우저 리다이렉트로 변경 필요** — 현재 JSON 반환이라 브라우저 흐름 부적합), A4 end-to-end 검증, A5 옛 로그인(mfds_user oauth_router·mfds_admin google auth·HS256 token_service) 폐기.
+- **적용**: `docker compose up -d --force-recreate backend auth` 후 반영(env 변경).
+
+### 정리 (같은 날 후속)
+- **URL prefix `/authz` → `/auth`** — 별도 도메인 분리 + 옛 소셜 폐기로 충돌 사라짐(`auth_router.py`·테스트·`.env.auth` redirect·문서). Redis `authz:` 내부 키는 유지.
+- **`backend/keys/` 삭제** — 개인키 사본 제거(base64가 `.env.auth`에 있음). redirect URI를 `.env.auth` 한 곳으로 통일하고 `.env`의 죽은 소셜 redirect(GOOGLE/KAKAO/NAVER) 제거.
+- **옛 소셜 로그인 언마운트** — `mfds_user` `oauth_router`(HS256) 언마운트(파일은 보존, A5에서 삭제). admin google(`/docs` 결합)은 다음 컷오버로.
+
+## [v0.6.0] - 2026-07-22
+
+### Added
+- **`apps/auth` Phase 6 — 분리 배포 산출물.** (auth.foodopenlab.com 인증 전용 컨테이너)
+  - **`backend/auth_main.py`** — 인증 전용 엔트리포인트. auth_router + wellknown_router + `/healthz`, lifespan에서 `create_auth_tables`, CORS `allow_credentials=True`(cross-origin httponly 쿠키), docs 비노출. `uvicorn auth_main:app --host 0.0.0.0 --port 9000`.
+  - **`docker-compose.yaml`**(현재 이 서버가 실행 중인 파일) — `auth` 서비스 추가(backend와 동일 `build: ./backend` + 코드 bind-mount, `command: uvicorn auth_main:app ... 9000`, **ports 무노출**, `container_name: auth`, `env_file: [./backend/.env, ./backend/.env.auth]`). cloudflared `depends_on`에 `auth`. **Hub 불필요 — 서버에서 직접 빌드.** (`docker-compose.server.yml`은 다른 원격 서버용이라 미수정.)
+  - **`backend/.env.auth.example`** — 개인/공개키·kid·aud 배치 가이드(개인키는 auth 컨테이너 전용).
+  - **`backend/.importlinter`** — `auth-isolation`(mfds_user·mfds_admin·ontology·braindead·titanic·siliconvalley → auth import 금지) + `auth-selfcontained`(auth → 타 spoke import 금지) 계약. 수동 grep으로 현재 0 위반 확인.
+- **cloudflared**: `auth.foodopenlab.com` → `http://auth:9000` Public Hostname을 Zero Trust 대시보드에 등록(CNAME 자동 생성). 토큰 모드라 코드가 아닌 대시보드 관리.
+
+### Notes
+- 검증: `auth_main.py` 단독 기동 → `/healthz` 200, `/authz/*`·`/.well-known/jwks.json` 라우트 등록. docker-compose YAML 유효 + auth ports 무노출 확인. importlinter 2계약 수동 검증 통과.
+- **⚠️ 운영(서버에서 직접, Hub 불필요)**: (1) `generate_jwt_keys.sh`로 키 생성→`.env.auth` 작성, (2) `backend/.env`에 `JWT_PUBLIC_KEY_B64`+`SERVICE_AUD` 추가(개인키 금지), (3) `docker compose up -d --build auth`(+ `restart backend`), (4) `https://auth.foodopenlab.com/healthz` 확인. 코드가 bind-mount라 이미지 push/pull 없음.
+- 기존 앱(mfds_user·mfds_admin) 무변경(D1) 유지. auth BC 로드맵 Phase 0~6 전 단계 완료.
+
+## [v0.5.2] - 2026-07-22
+
+### Added
+- **`apps/auth` Phase 5 — RBAC(RoleChecker) 시연.** `GET /authz/protected-demo` 추가 — `RoleChecker(Role.ADMIN.value)` 가드(무토큰 401 / user 403 / admin 200). **기존 앱 무변경** 원칙 유지를 위해 실제 앱 대신 auth 자체에 시연(실제 앱 보호는 프론트의 auth 토큰 전환 I3 이후). auth 테스트 26개(+3).
+
+### Changed
+- **hot-path 튜닝**: `grid_seraph_token_guard_manager._ensure_not_revoked`의 jti 블랙리스트 Redis 조회를 `asyncio.timeout(0.2)`로 감쌈. 인증 검증은 모든 요청이 타는 경로라, Redis 장애·지연 시 **빠른 fail-open**으로 요청 지연을 막는다(기존엔 연결 타임아웃까지 대기 → 느린 fail-open).
+
+### Notes
+- 검증: `apps/auth/tests` 26 passed(1.5s). RoleChecker 시연은 최소 FastAPI 앱 + FakeRedis 주입으로 격리 테스트.
+- **남은 것**: Phase 6(분리 배포 — D3에서 '이후'로 지연): `auth_main.py` + docker `auth` 서비스 + `.env.auth`/`.env.backend` 분리 + cloudflared `auth.foodopenlab.com`(대시보드 수동) + `.importlinter`.
+
+## [v0.5.1] - 2026-07-22
+
+### Added
+- **`apps/auth` Phase 4 — OAuth 로그인·토큰 발급 흐름 완성.** (I2=auth 자체 identity 보유, I5=Google/Kakao/Naver 3종 확정)
+  - **자체 신원(auth_identities)**: `AuthIdentity` 엔티티 + `AuthIdentityORM`(unique(provider, provider_id)) + `AuthIdentityRepository`(upsert/get) + `db_init.create_auth_tables`(main.py 스타트업 등록). `sub`=auth 자체 id.
+  - **OAuth provider 3종**(자기완결, `mfds_user` 참조·미import): `base_oauth_adapter`(Template Method) + google/kakao/naver + `oauth_provider_factory`. state(CSRF)는 `redis_oauth_state`.
+  - **인터랙터** `auth_interactor.py`: build_authorize_url → callback(state 검증→profile→identity upsert→access+refresh 발급) → refresh(로테이션+roles 재로딩) → logout(jti 블랙리스트+refresh 폐기).
+  - **엔드포인트**: `GET /authz/{provider}/login`(302), `GET /authz/callback/{provider}`(TokenResponse+httponly 쿠키), `POST /authz/refresh`, `POST /authz/logout`(`get_current_user` 가드), `GET /.well-known/jwks.json`(공개키 JWK, kid).
+  - **JWKS** `jwks_provider.py`: 공개키→JWK(kty/kid/use/alg), 개인키 파라미터 미노출.
+  - **core 배선**: `grid_seraph_token_guard_manager.get_current_user`에 jti 블랙리스트 조회 주입(Redis fail-open).
+- **auth 테스트 23개**(+7): 콜백→검증가능 토큰, 위조 state 거부, refresh 로테이션+재사용 감지, logout→jti 블랙리스트, provider factory 3종+미지원 거부, JWKS 공개키 노출. `pytest.ini testpaths`에 `apps/auth/tests` 추가.
+
+### Notes
+- 검증: `apps/auth/tests` 23 passed · `main.py` import 무결 + authz 라우트 6종 등록 확인 · apps/auth→타 spoke import 0 · core→apps import 0 · 56파일 py_compile 통과.
+- **미착수**: Phase 5(RoleChecker 예시 앱 — 대상 앱 질문 필요), Phase 6(auth_main.py·docker·cloudflared `auth.foodopenlab.com`·importlinter).
+- 기존 HS256(mfds_user·mfds_admin) 무변경(D1).
+
+## [v0.5.0] - 2026-07-22
+
+### Added
+- **`apps/auth` 인증 게이트웨이 BC 착수 (Phase 0~3).** RS256 비대칭·발급/검증 분리·병렬 신설(기존 HS256 무변경). 스펙: [`apps/auth/_docs/CLAUDE.md`](../apps/auth/_docs/CLAUDE.md).
+  - **Phase 0**: `scripts/generate_jwt_keys.sh`(RS256 2048, base64 env 출력), apps/auth fractal 스켈레톤, `GET /authz/myself` 배선검증(200). `main.py`에 `auth_router` 마운트(prefix 없음 — 라우터 자체 `/authz` 보유).
+  - **Phase 1**: 공유커널 검증기 `core/matrix/grid_seraph_token_guard_manager.py` — `verify_token(token, aud)`(`algorithms=["RS256"]` 리터럴)·`get_current_user`(헤더/쿠키)·`RoleChecker`. 개인키 미참조. 기존 `grid_admin_guard_manager`(HS256)와 병렬 공존.
+  - **Phase 2**: 발급 어댑터 `apps/auth/adapter/outbound/token/rs256_token_issuer.py` — 개인키 **호출 시점 로드**(import 시 키부재 무해), 클레임 sub/roles/aud/iat/exp/jti + kid 헤더.
+  - **Phase 3**: `redis_refresh_session.py` — 토큰 SHA-256 해시만 저장, 로테이션 + **재사용 감지 시 sub 세션 전체 폐기** + jti 블랙리스트. 키: `authz:refresh:{hash}`·`authz:user:{sub}:tokens`·`authz:jti:block:{jti}`.
+- **auth 테스트 16개** (`apps/auth/tests/`): 검증기 거부 5종(만료·서명변조·`alg=none`·`alg=HS256`·aud불일치) + 발급→검증 왕복 + import 안전성 + refresh 재사용→전체폐기 + jti 블랙리스트. 인메모리 RS256 키페어·FakeRedis 대역 사용.
+
+### Notes
+- 검증: `PYTHONPATH=apps:core python -m pytest apps/auth/tests -q` → 16 passed. `main.py` import 무결 + `/authz/myself` 200.
+- **미착수**: Phase 4(OAuth/login/logout/refresh/jwks — **I2 identity 소유권 결정 대기**), Phase 5(RBAC 예시 앱), Phase 6(auth_main.py·docker·cloudflared `auth.foodopenlab.com`·importlinter).
+- 기존 HS256 인증(mfds_user·mfds_admin) 무변경(D1).
+
+## [v0.4.2] - 2026-07-22
+
+### Changed
+- **온톨로지 `gateway` 프랙탈 세트 → `semantic`으로 개명** (향후 별도 보안 게이트웨이에 `gateway` 이름을 양보). 실제 역할이 "채팅 시맨틱 라우터"이므로 이름을 역할에 맞춤. 파일 9개 `git mv` + 심볼 전체 치환.
+  - 파일: `gateway_router→semantic_router`, `gateway_use_case→semantic_use_case`, `gateway_interactor→semantic_interactor`, `gateway_dto→semantic_dto`, `gateway_schema→semantic_schema`, `gateway_provider→semantic_provider`, `gateway_audit_log_{entity,repository,orm}→semantic_audit_log_{entity,repository,orm}`.
+  - 심볼: `IGatewayUseCase→ISemanticUseCase`, `GatewayInteractor→SemanticInteractor`, `Gateway{Query,Result,AskRequest,AskResponse,AuditLog,AuditLogORM,AuditLogRepository}→Semantic*`, `get_gateway_use_case→get_semantic_use_case`.
+  - 참조 갱신: `v1/__init__.py`, `orm/__init__.py`, `scout_provider`, `exaone_intent_classifier_adapter`, `intent_classifier_port`, `audit_log_port`.
+  - **URL prefix** `/gateway → /semantic` (엔드포인트 `/semantic/ask`, `/semantic/myself`).
+  - **DB 테이블** `gateway_audit_logs → semantic_audit_logs` (마이그레이션 미참조 — 모델 기반 생성).
+
+### Notes
+- 검증: `py_compile` 전체 통과 + import 배선 확인(집계 v1 라우터 경로 `/semantic/ask`, `/semantic/myself`).
+- **의도적 미변경**: 공유 cross-cutting 의존성 `dependencies/rate_limit.py`(향후 보안 게이트웨이도 재사용 예정) — env `GATEWAY_RATE_LIMIT_PER_MIN` 유지. `braindead`/`mfds_user`의 무관한 `*_gateway`도 미변경.
+- **운영 주의**: URL prefix·테이블명이 바뀌었으므로 (1) 프론트/클라이언트의 `/gateway/*` 호출을 `/semantic/*`로, (2) 기존 DB의 `gateway_audit_logs` 데이터가 필요하면 `ALTER TABLE gateway_audit_logs RENAME TO semantic_audit_logs;` 수동 실행 필요.
+
 ## [v0.4.1] - 2026-07-21
 
 ### Added

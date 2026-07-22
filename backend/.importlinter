@@ -1,0 +1,40 @@
+# import-linter 계약 — auth 격리 + star topology 강제.
+# 실행:  pip install import-linter && PYTHONPATH=apps:core lint-imports
+# (apps/ 하위가 top-level 패키지로 import되므로 PYTHONPATH 필요.)
+
+[importlinter]
+root_packages =
+    auth
+    mfds_user
+    mfds_admin
+    ontology
+    braindead
+    titanic
+    siliconvalley
+    matrix
+
+[importlinter:contract:auth-isolation]
+name = 다른 앱은 apps.auth 를 import 하지 않는다 (발급 격리 — 검증은 core.matrix 만)
+type = forbidden
+source_modules =
+    mfds_user
+    mfds_admin
+    ontology
+    braindead
+    titanic
+    siliconvalley
+forbidden_modules =
+    auth
+
+[importlinter:contract:auth-selfcontained]
+name = auth 는 다른 spoke 를 import 하지 않는다 (분리 배포 자기완결)
+type = forbidden
+source_modules =
+    auth
+forbidden_modules =
+    mfds_user
+    mfds_admin
+    ontology
+    braindead
+    titanic
+    siliconvalley

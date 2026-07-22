@@ -100,6 +100,8 @@ from braindead.adapter.inbound.api import braindead_router
 from braindead.adapter.outbound.repositories.db_init import create_contact_tables
 from ontology.adapter.outbound.repositories.db_init import create_ontology_tables
 from ontology.adapter.inbound.api import vision_router
+from auth.adapter.inbound.api import auth_router, wellknown_router
+from auth.adapter.outbound.pg.db_init import create_auth_tables
 
 
 logger = logging.getLogger(__name__)
@@ -238,6 +240,7 @@ async def lifespan(app: FastAPI):
     await create_titanic_tables()
     await create_contact_tables()
     await create_ontology_tables()
+    await create_auth_tables()
     await asyncio.to_thread(preload_food_safety_caches)
     await ensure_food_safety_db_cache_on_startup()
     await ensure_food_poisoning_stat_db_cache_on_startup()
@@ -344,6 +347,8 @@ app.include_router(titanic_router, prefix="/api")
 app.include_router(piper_router, prefix="/api")
 app.include_router(braindead_router, prefix="/api")
 app.include_router(vision_router, prefix="/api")
+app.include_router(auth_router)  # 라우터 자체가 /authz prefix 보유 (auth 서브도메인 분리 시 auth_main.py가 동일 경로 서빙)
+app.include_router(wellknown_router)  # /.well-known/jwks.json (prefix 밖)
 
 
 # --- Swagger/OpenAPI 문서 보호 (구글 세션 쿠키 · role=admin RBAC) ---

@@ -3,6 +3,7 @@
 .env.*
 !.env.example
 !.env.sample
+!.env.auth.example
 .envrc
 .npmrc
 .pypirc

@@ -47,6 +47,7 @@ backend/apps/{domain}/_docs/CLAUDE.md
 | siliconvalley | [`apps/siliconvalley/_docs/CLAUDE.md`](../apps/siliconvalley/_docs/CLAUDE.md) |
 | mfds_user | [`apps/mfds_user/_docs/CLAUDE.md`](../apps/mfds_user/_docs/CLAUDE.md) |
 | mfds_admin | [`apps/mfds_admin/_docs/CLAUDE.md`](../apps/mfds_admin/_docs/CLAUDE.md) |
+| auth | [`apps/auth/_docs/CLAUDE.md`](../apps/auth/_docs/CLAUDE.md) |
 
 앱 작업 시: **this file + 해당 앱 `_docs/CLAUDE.md`**.
 
@@ -147,6 +148,7 @@ result = await asyncio.to_thread(use_case.analyze_intent, question)
 | `braindead` | 메시징 채널 (Email·Telegram·Discord) | 구현됨 |
 | `titanic` | ML 학습/데모 | 구현됨 |
 | `siliconvalley` | Piper 크루 | 구현됨 |
+| `auth` | 인증 게이트웨이 (RS256 발급 전용, 검증은 `core/matrix` 커널) | 구현중 |
 | `imitation_game` | 이미테이션 게임 | 계획됨 |
 | `inception` | 인셉션 | 계획됨 |
 | `social_network` | 소셜 네트워크 | 계획됨 |

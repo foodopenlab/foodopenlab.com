@@ -1,3 +1,3 @@
-from ontology.adapter.outbound.orm.gateway_audit_log_orm import GatewayAuditLogORM
+from ontology.adapter.outbound.orm.semantic_audit_log_orm import SemanticAuditLogORM
 
-__all__ = ["GatewayAuditLogORM"]
+__all__ = ["SemanticAuditLogORM"]

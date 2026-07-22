@@ -9,10 +9,10 @@ from sqlalchemy.orm import Mapped, mapped_column
 from matrix.grid_oracle_database_manager import Base
 
 
-class GatewayAuditLogORM(Base):
-    """`gateway_audit_logs` — 시맨틱 게이트웨이 감사 로그."""
+class SemanticAuditLogORM(Base):
+    """`semantic_audit_logs` — 시맨틱 게이트웨이 감사 로그."""
 
-    __tablename__ = "gateway_audit_logs"
+    __tablename__ = "semantic_audit_logs"
 
     id: Mapped[int] = mapped_column(Integer, primary_key=True)
     created_at: Mapped[datetime] = mapped_column(

@@ -1,11 +1,11 @@
 from pydantic import BaseModel, Field
 
 
-class GatewayAskRequest(BaseModel):
+class SemanticAskRequest(BaseModel):
     question: str = Field(..., description="사용자 질문", min_length=1)
 
 
-class GatewayAskResponse(BaseModel):
+class SemanticAskResponse(BaseModel):
     answer: str
     destination: str
     blocked: bool
