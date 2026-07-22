@@ -40,16 +40,19 @@ class _FakeIdentity(IIdentityPort):
         self._store: dict[tuple[str, str], AuthIdentity] = {}
         self._seq = 0
 
-    async def upsert_oauth_identity(self, profile: OAuthProfile, roles: list[str]) -> AuthIdentity:
+    async def upsert_oauth_identity(self, profile: OAuthProfile) -> AuthIdentity:
+        from auth.domain.value_objects.role import resolve_roles_for_email
+
+        roles = resolve_roles_for_email(profile.email)  # 테스트 대역은 admin/user만(expert는 DB)
         key = (profile.provider, profile.provider_id)
         if key not in self._store:
             self._seq += 1
             self._store[key] = AuthIdentity(
                 id=self._seq, provider=profile.provider, provider_id=profile.provider_id,
-                email=profile.email, name=profile.name, roles=list(roles),
+                email=profile.email, name=profile.name, roles=roles,
             )
         else:
-            self._store[key].roles = list(roles)
+            self._store[key].roles = roles
         return self._store[key]
 
     async def get(self, identity_id: str) -> AuthIdentity | None:

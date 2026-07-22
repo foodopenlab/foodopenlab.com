@@ -14,18 +14,32 @@ from sqlalchemy import select
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from matrix.orm.expert_user_orm import ExpertUserORM
+from matrix.orm.expert_whitelist_orm import ExpertWhitelistORM
 
 from auth.app.dtos.auth_dto import OAuthProfile
 from auth.app.ports.output.identity_port import IIdentityPort
 from auth.domain.entities.auth_identity_entity import AuthIdentity
-from auth.domain.value_objects.role import resolve_roles_for_email
+from auth.domain.value_objects.role import Role, is_admin_email
 
 
 class AuthIdentityRepository(IIdentityPort):
     def __init__(self, session: AsyncSession) -> None:
         self.session = session
 
-    async def upsert_oauth_identity(self, profile: OAuthProfile, roles: list[str]) -> AuthIdentity:
+    async def _resolve_roles(self, email: str) -> list[str]:
+        """우선순위 admin > expert > user. admin=env, expert=DB(expert_whitelist)."""
+        if is_admin_email(email):
+            return [Role.ADMIN.value, Role.USER.value]
+        promoted = (
+            await self.session.execute(
+                select(ExpertWhitelistORM.email).where(ExpertWhitelistORM.email == email)
+            )
+        ).scalar_one_or_none()
+        if promoted:
+            return [Role.EXPERT.value, Role.USER.value]
+        return [Role.USER.value]
+
+    async def upsert_oauth_identity(self, profile: OAuthProfile) -> AuthIdentity:
         email = profile.email or f"{profile.provider}_{profile.provider_id}@social.foodopenlab.local"
 
         # 1) (provider, provider_id) → 2) email 순으로 기존 유저 탐색
@@ -64,7 +78,7 @@ class AuthIdentityRepository(IIdentityPort):
 
         await self.session.commit()
         await self.session.refresh(user)
-        return self._to_entity(user, roles)
+        return self._to_entity(user, await self._resolve_roles(email))
 
     async def get(self, identity_id: str) -> AuthIdentity | None:
         try:
@@ -74,7 +88,7 @@ class AuthIdentityRepository(IIdentityPort):
         user = await self.session.get(ExpertUserORM, pk)
         if user is None:
             return None
-        return self._to_entity(user, resolve_roles_for_email(user.email))
+        return self._to_entity(user, await self._resolve_roles(user.email))
 
     @staticmethod
     def _to_entity(user: ExpertUserORM, roles: list[str]) -> AuthIdentity:

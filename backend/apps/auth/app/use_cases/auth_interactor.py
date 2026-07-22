@@ -56,8 +56,7 @@ class AuthInteractor(IAuthUseCase):
         if not profile.provider_id:
             raise ValueError("소셜 프로필을 가져오지 못했습니다.")
 
-        roles = role_vo.resolve_roles_for_email(profile.email)  # 어드민 화이트리스트 판정
-        identity = await self._identity.upsert_oauth_identity(profile, roles)
+        identity = await self._identity.upsert_oauth_identity(profile)  # roles는 repo가 재평가(admin/expert/user)
         return await self._issue(identity)
 
     async def refresh(self, refresh_token: str) -> TokenBundle:

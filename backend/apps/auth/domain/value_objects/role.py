@@ -12,6 +12,7 @@ from enum import Enum
 
 class Role(str, Enum):
     USER = "user"
+    EXPERT = "expert"
     ADMIN = "admin"
 
 
@@ -24,11 +25,16 @@ def _admin_whitelist() -> set[str]:
     return {e.strip().lower() for e in raw.split(",") if e.strip()}
 
 
-def resolve_roles_for_email(email: str) -> list[str]:
-    """이메일이 어드민 화이트리스트에 있으면 admin, 아니면 user 역할을 부여한다.
+def is_admin_email(email: str) -> bool:
+    return bool(email) and email.strip().lower() in _admin_whitelist()
 
-    로그인마다 재평가하므로 화이트리스트 변경이 다음 로그인에 반영된다.
+
+def resolve_roles_for_email(email: str) -> list[str]:
+    """DB 없이 판정 가능한 admin/user만 결정(fallback용).
+
+    expert 판정은 DB(expert_whitelist)가 필요하므로 저장소(repository)에서 수행한다.
+    우선순위: admin > expert > user.
     """
-    if email and email.strip().lower() in _admin_whitelist():
+    if is_admin_email(email):
         return [Role.ADMIN.value, Role.USER.value]
     return [Role.USER.value]
