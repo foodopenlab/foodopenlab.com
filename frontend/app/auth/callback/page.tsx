@@ -26,7 +26,23 @@ export default function OAuthCallbackPage() {
     // 주소창에서 토큰 제거 후 상태 전파.
     window.history.replaceState(null, "", "/auth/callback")
     window.dispatchEvent(new Event("auth-state-change"))
-    router.replace("/mypage")
+
+    // 통합 토큰의 role로 목적지 분기 — admin이면 관리자 화면으로.
+    let isAdmin = false
+    try {
+      const p = JSON.parse(
+        decodeURIComponent(
+          atob(accessToken.split(".")[1].replace(/-/g, "+").replace(/_/g, "/"))
+            .split("")
+            .map((c) => "%" + ("00" + c.charCodeAt(0).toString(16)).slice(-2))
+            .join("")
+        )
+      )
+      isAdmin = p.role === "admin" || (Array.isArray(p.roles) && p.roles.includes("admin"))
+    } catch {
+      isAdmin = false
+    }
+    router.replace(isAdmin ? "/admin" : "/mypage")
   }, [router])
 
   return (

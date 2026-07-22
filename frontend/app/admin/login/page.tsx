@@ -7,10 +7,10 @@ import { Button } from "@/components/ui/button"
 import { Spinner } from "@/components/ui/spinner"
 import { isAdminLoggedIn } from "@/lib/admin/auth"
 
-// OAuth state 쿠키가 백엔드 도메인에 설정돼야 하므로 백엔드 절대 URL로 top-level 이동한다.
+// 어드민도 유저와 동일한 auth 게이트웨이 구글 로그인. admin 권한은 auth가 이메일 화이트리스트로 판정.
 function adminGoogleLoginUrl(): string {
-  const base = (process.env.NEXT_PUBLIC_API_URL ?? "").replace(/\/$/, "")
-  return `${base}/admin/auth/google/login`
+  const base = (process.env.NEXT_PUBLIC_AUTH_URL || "https://auth.foodopenlab.com").replace(/\/$/, "")
+  return `${base}/auth/google/login`
 }
 
 const ERROR_MESSAGES: Record<string, string> = {

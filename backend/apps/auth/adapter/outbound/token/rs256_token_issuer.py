@@ -30,9 +30,13 @@ class Rs256TokenIssuer(ITokenIssuerPort):
         ttl_min = int(os.getenv("AUTH_ACCESS_TTL_MIN", str(_DEFAULT_TTL_MIN)))
         expires_at = now + timedelta(minutes=ttl_min)
         jti = uuid.uuid4().hex
+        roles = list(roles)
+        # 단수 role(primary) — 프론트/기존 유저 페이로드 호환(admin 우선).
+        primary_role = "admin" if "admin" in roles else (roles[0] if roles else "user")
         claims = {
             "sub": sub,
-            "roles": list(roles),
+            "roles": roles,
+            "role": primary_role,
             "aud": aud,
             "email": email,
             "name": name,

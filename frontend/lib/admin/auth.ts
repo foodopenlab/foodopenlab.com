@@ -1,4 +1,5 @@
-const ADMIN_TOKEN_KEY = "admin_token"
+// 통합: 어드민도 유저와 같은 auth 토큰(access_token)을 쓴다. role === "admin" 으로 판정.
+const ADMIN_TOKEN_KEY = "access_token"
 const ADMIN_NAME_KEY = "admin_display_name"
 
 export function getAdminToken(): string | null {

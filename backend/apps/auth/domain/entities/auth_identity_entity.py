@@ -16,5 +16,5 @@ class AuthIdentity:
     email: str
     name: str
     roles: list[str] = field(default_factory=lambda: ["user"])
-    id: int | None = None
+    id: str | None = None  # 공유 유저 테이블의 UUID(문자열)
     created_at: datetime | None = None
