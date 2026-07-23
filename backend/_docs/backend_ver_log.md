@@ -1,5 +1,18 @@
 # Backend Version Log
 
+## [v0.7.1] - 2026-07-22
+
+### Added
+- **식약처 외부 호출 긴급 침묵(kill-switch) 게이트.** OpenAPI 차단 대응용으로 식품안전나라 OpenAPI(리콜/제재/식중독/HACCP)와 `www.mfds.go.kr` 보도자료 크롤링을 일정 기간 완전 정지.
+  - **`mfds_user/adapter/outbound/cache/mfds_silence.py`(신규)** — 파일 기반 게이트(`data/mfds_silence.json`의 `until`). `is_mfds_silenced()`/`arm_mfds_silence(hours)`/`clear_mfds_silence()`. 실행 중 프로세스도 다음 호출 시점 즉시 반영, 재시작·새 날짜에도 유지, 만료 시 자동 해제. 기존 `api_result` 쿼터차단과 독립(수동 sync의 quota clear로 안 풀림).
+  - **가드 4곳**: `recall_scheduler.run_staggered_sync_wave`(스케줄러+수동 조기 return, quota clear 이전), `trigger_manual_staggered_sync`(관리자에 `silenced` 상태 반환), `lifecycle.background_enrich_haccp_certifications`·`ensure_food_poisoning_stat_db_cache_on_startup`(기동 skip), `gov_and_stats_adapters.MfdsPressAdapter._fetch_sync`(크롤 skip→[]).
+  - **범위 제외**: `atfis.or.kr`(aT), 법령·scienceon·뉴스 등 비(非)식약처 소스.
+
+### Notes
+- 검증: `../.venv/bin/python`으로 4개 모듈 임포트 무결, `arm_mfds_silence(72)` 후 `is_mfds_silenced()==True`, 수동 트리거가 `{started:False, reason:"silenced"}` 반환 확인.
+- **적용**: 실행 중인 서버는 **재시작(`docker compose restart backend`)해야 가드 코드가 로드됨**. 플래그 파일은 이미 arm되어 재시작 즉시 침묵 상태. 조기 해제는 `data/mfds_silence.json` 삭제 또는 `clear_mfds_silence()`.
+- 현재 arm: `until = 2026-07-25T23:06 KST`(앱 시계 기준 지금부터 72h).
+
 ## [v0.7.0] - 2026-07-22
 
 ### Changed

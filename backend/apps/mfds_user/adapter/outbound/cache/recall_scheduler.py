@@ -11,6 +11,10 @@ from mfds_user.adapter.outbound.cache.api_result import (
     clear_api_quota_block_for_new_day,
     is_api_quota_blocked,
 )
+from mfds_user.adapter.outbound.cache.mfds_silence import (
+    is_mfds_silenced,
+    silenced_until,
+)
 from mfds_user.adapter.outbound.cache.food_safety_recall_cache import (
     sync_recall_catalog_from_api,
 )
@@ -88,6 +92,12 @@ async def run_staggered_sync_wave(
 ) -> None:
     """?뚯닔 ???됱젙泥섎텇 3醫?媛꾧꺽) ??DB ??HACCP ?쒖감 ?숆린??"""
     global _stagger_sec_override
+    if is_mfds_silenced():
+        logger.warning(
+            "food safety staggered sync SKIPPED (silenced until %s) wave=%s slot=%s",
+            silenced_until(), wave, slot_display,
+        )
+        return
     if clear_quota_block:
         from mfds_user.adapter.outbound.cache.api_result import clear_api_quota_block
         clear_api_quota_block()
@@ -145,6 +155,14 @@ async def run_food_safety_daily_scheduler() -> None:
 
 async def trigger_manual_staggered_sync(*, force_quota: bool = True) -> dict:
     global _manual_sync_running, _stagger_sec_override
+    if is_mfds_silenced():
+        until = silenced_until()
+        return {
+            "started": False,
+            "reason": "silenced",
+            "silenced_until": until.isoformat() if until else None,
+            "message": "식약처 외부 호출이 침묵(정지) 상태입니다. 해제 후 다시 시도하세요.",
+        }
     async with _manual_sync_lock:
         if _manual_sync_running:
             return {"started": False, "reason": "already_running"}

@@ -10,6 +10,7 @@ import logging
 from mfds_user.app.ports.output.crawler_ports import MfdsPressPort, FoodStatsPort, RecallReportPort
 from mfds_user.domain.value_objects.report_section_vo import ReportItem
 from mfds_user.app.ports.output.recall_repository import RecallRepositoryPort
+from mfds_user.adapter.outbound.cache.mfds_silence import is_mfds_silenced
 
 logger = logging.getLogger(__name__)
 
@@ -37,6 +38,9 @@ class MfdsPressAdapter(MfdsPressPort):
         return await loop.run_in_executor(None, self._fetch_sync, keywords)
 
     def _fetch_sync(self, keywords: List[str]) -> List[ReportItem]:
+        if is_mfds_silenced():
+            logger.warning("MFDS press crawl SKIPPED (silenced)")
+            return []
         try:
             req = urllib.request.Request(self.BASE_URL, headers={"User-Agent": "Mozilla/5.0"})
             with urllib.request.urlopen(req, timeout=10) as response:

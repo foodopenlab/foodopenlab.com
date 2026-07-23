@@ -6,6 +6,7 @@ import asyncio
 import logging
 
 from matrix.grid_oracle_database_manager import AsyncSessionLocal
+from mfds_user.adapter.outbound.cache.mfds_silence import is_mfds_silenced
 from mfds_user.adapter.outbound.pg.food_safety_db_sync import (
     ensure_food_safety_db_cache,
     enrich_enforcements_from_api,
@@ -46,7 +47,7 @@ async def background_enrich_recalls() -> None:
         logger.warning("background recall enrich failed: %s", e)
 
 async def background_enrich_haccp_certifications() -> None:
-    if AsyncSessionLocal is None:
+    if AsyncSessionLocal is None or is_mfds_silenced():
         return
     await asyncio.sleep(3.5)
     try:
@@ -99,7 +100,7 @@ async def ensure_food_poisoning_stat_db_cache_on_startup() -> None:
         FoodPoisoningStatPgRepository,
     )
 
-    if AsyncSessionLocal is None:
+    if AsyncSessionLocal is None or is_mfds_silenced():
         return
     async with AsyncSessionLocal() as session:
         try:
